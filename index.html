@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0F2237">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob:; media-src blob: data:; connect-src https://api.openai.com https://generativelanguage.googleapis.com https://api.anthropic.com; worker-src blob: https://cdnjs.cloudflare.com; base-uri 'none'; form-action 'none'">
+<meta name="author" content="Fernando Borrás Rocher; María Antonia Vaquero Sánchez">
+<meta name="description" content="Diagnóstico exploratorio de la internacionalización acelerada frente a la secuencial">
+<title>InternacionalIA · Diagnóstico exploratorio de la internacionalización acelerada frente a la secuencial</title><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --tinta:#0F2237; --acero:#2E4B6B; --acero-claro:#7C93AC; --gris:#5D7691;
+  --papel:#F3F6FA; --blanco:#FFFFFF; --linea:#D8E0E9; --linea-2:#E8EEF4;
+  --brasa:#E4572E; --brasa-osc:#C9441F; --brasa-suave:#FDEBE4;
+  --forjado:#0E7C6B; --forjado-suave:#E0F3EE; --aviso:#8A3617;
+  --c-ctx:#1F6FB2; --c-comp:#6B4FD8; --c-rda:#0E8C7A; --c-tema:#C98200; --c-eval:#E4572E; --c-final:#2E4B6B;
+  --sombra:0 1px 0 rgba(15,34,55,.05), 0 14px 34px -22px rgba(15,34,55,.45);
+  --sombra-alta:0 2px 0 rgba(15,34,55,.04), 0 22px 50px -24px rgba(15,34,55,.55);
+  --r:14px;
+  --display:"Bricolage Grotesque",Georgia,serif;
+  --texto:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--papel);color:var(--tinta);font-family:var(--texto);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:84px}
+a{color:var(--acero)}
+:focus-visible{outline:3px solid var(--brasa);outline-offset:2px;border-radius:6px}
+.hidden{display:none!important}
+svg.i{width:1.15em;height:1.15em;vertical-align:-.2em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+code{font-family:var(--mono);font-size:.85em;background:var(--linea-2);padding:1px 5px;border-radius:5px}
+
+/* Barra superior */
+.topbar{position:sticky;top:0;z-index:40;background:var(--tinta);color:#EAF1F7;box-shadow:0 6px 24px -14px rgba(0,0,0,.6)}
+.tb-in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px}
+.logo{background:none;border:0;color:#fff;font-family:var(--display);font-weight:800;font-size:24px;letter-spacing:-.03em;cursor:pointer;padding:2px 4px;display:flex;align-items:center;gap:8px}
+.logo em{font-style:normal;color:var(--brasa)}
+.logo .anv{width:30px;height:30px;border-radius:9px;background:var(--brasa);display:grid;place-items:center;color:#fff}
+.stepper{flex:1;display:flex;align-items:center;justify-content:center;min-width:0}
+.sdot{display:flex;align-items:center;gap:7px;background:none;border:0;color:#8FA7BE;font:600 13px var(--texto);padding:6px;cursor:pointer;border-radius:10px;white-space:nowrap}
+.sdot:disabled{cursor:not-allowed;opacity:.45}
+.sdot .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:2px solid #3E5C7D;font-size:12px;color:#A9C0D4;transition:all .2s}
+.sdot .n svg{width:14px;height:14px}
+.sdot[data-state="done"] .n{background:var(--forjado);border-color:var(--forjado);color:#fff}
+.sdot[data-state="now"]{color:#fff}
+.sdot[data-state="now"] .n{background:var(--brasa);border-color:var(--brasa);color:#fff;box-shadow:0 0 0 4px rgba(228,87,46,.25)}
+.sdot:not(:disabled):hover{background:rgba(255,255,255,.06)}
+.sline{flex:0 1 26px;height:2px;background:#2F4A68;min-width:6px}
+.sline.on{background:var(--forjado)}
+.tb-tools{display:flex;gap:6px}
+.tb-btn{background:transparent;border:1px solid #3E5C7D;color:#C9D8E6;border-radius:9px;padding:6px 10px;font:600 13px var(--texto);cursor:pointer;display:flex;align-items:center;gap:6px}
+.tb-btn:hover{border-color:var(--brasa);color:#fff}
+.progress{height:4px;background:#1E3550}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brasa),#F59E0B);transition:width .4s}
+@media(max-width:960px){.sdot .lbl{display:none}.sdot[data-state="now"] .lbl{display:inline}}
+@media(max-width:720px){
+  .tb-in{flex-wrap:wrap;gap:8px}
+  .stepper{order:3;flex-basis:100%;justify-content:space-between}
+  .sdot[data-state="now"] .lbl{display:none}
+  .tb-btn .lbl{display:none}
+}
+
+/* Pantallas */
+main{max-width:1180px;margin:0 auto;padding:26px 16px 40px}
+.screen{display:none}
+.screen.on{display:block}
+@media(prefers-reduced-motion:no-preference){.screen.on{animation:rise .35s cubic-bezier(.2,.7,.3,1) both}@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}}
+.sh{display:flex;gap:18px;align-items:flex-start;margin:4px 0 22px}
+.sh-ico{width:64px;height:64px;border-radius:18px;background:var(--c,var(--brasa));color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 12px 24px -14px var(--c,var(--brasa))}
+.sh-ico svg{width:32px;height:32px}
+.sh-step{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--acero-claro);margin:4px 0}
+.sh h2{font-family:var(--display);font-weight:800;font-size:clamp(26px,3.6vw,38px);letter-spacing:-.025em;line-height:1.05;margin:0 0 6px}
+.sh-lede{margin:0;color:var(--gris);font-size:16.5px;max-width:70ch}
+@media(max-width:600px){.sh-ico{width:48px;height:48px;border-radius:14px}.sh-ico svg{width:24px;height:24px}}
+
+.card{background:var(--blanco);border:1px solid var(--linea);border-radius:var(--r);box-shadow:var(--sombra);padding:20px;margin-bottom:18px}
+.card h3{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.01em;margin:0 0 4px;display:flex;align-items:center;gap:9px}
+.card h3 .num{width:26px;height:26px;border-radius:8px;background:var(--tinta);color:#fff;font:700 13px var(--mono);display:grid;place-items:center}
+.card .sub{margin:0 0 14px;color:var(--gris);font-size:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cols{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.sticky{position:sticky;top:96px}
+@media(max-width:900px){.cols{grid-template-columns:1fr}.sticky{position:static}}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+
+label,.lab{display:block;font-size:13.5px;font-weight:600;margin:0 0 6px;color:var(--acero)}
+label small,.lab small{font-weight:500;color:var(--acero-claro)}
+input[type=text],input[type=password],input[type=number],textarea,select{width:100%;padding:11px 13px;border:1.5px solid var(--linea);border-radius:10px;font-family:var(--texto);font-size:15px;color:var(--tinta);background:#fff;transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--acero-claro);box-shadow:0 0 0 4px rgba(124,147,172,.18)}
+input.bad{border-color:var(--brasa);box-shadow:0 0 0 4px rgba(228,87,46,.15)}
+textarea{resize:vertical;min-height:96px;line-height:1.5}
+input::placeholder,textarea::placeholder{color:#9DB0C2}
+.field{margin-bottom:16px}
+.help{font-size:12.8px;color:var(--gris);margin:6px 0 0}
+.help b{color:var(--acero)}
+
+button{font-family:var(--texto);cursor:pointer}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:11px;font-weight:600;font-size:15px;border:1.5px solid transparent;padding:11px 18px;transition:transform .08s,background .15s,border-color .15s;text-decoration:none;line-height:1.2}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--brasa);color:#fff;box-shadow:0 8px 18px -10px var(--brasa)}
+.btn-primary:hover{background:var(--brasa-osc)}
+.btn-big{font-size:17px;padding:14px 24px;border-radius:13px}
+.btn-dark{background:var(--tinta);color:#fff}
+.btn-dark:hover{background:#1c3656}
+.btn-ghost{background:#fff;border-color:var(--linea);color:var(--acero)}
+.btn-ghost:hover{border-color:var(--acero-claro);background:#F7FAFC}
+.btn-ok{background:var(--forjado);color:#fff}
+.btn-ok:hover{background:#0b6457}
+.btn-word{background:#2B579A;color:#fff}
+.btn-word:hover{background:#1e3f7a}
+.btn-sm{padding:7px 12px;font-size:13.5px;border-radius:9px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:#fff;border:1.5px solid var(--linea);border-radius:999px;padding:7px 13px;font-size:13.5px;color:var(--acero);cursor:pointer;display:inline-flex;align-items:center;gap:6px;line-height:1.25;text-align:left}
+.chip:hover{border-color:var(--brasa);color:var(--brasa)}
+.chip[aria-pressed="true"]{background:var(--tinta);border-color:var(--tinta);color:#fff}
+.chip.mini-ex{font-size:12.5px;padding:4px 10px;border-style:dashed}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1.5px solid var(--linea);background:#fff;border-radius:9px;padding:7px 11px;font-size:13.5px;font-weight:600;color:var(--acero)}
+.seg button:hover{border-color:var(--acero-claro)}
+.seg button[aria-pressed="true"]{background:var(--tinta);border-color:var(--tinta);color:#fff}
+
+.meto{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.meto button{text-align:left;background:#fff;border:1.5px solid var(--linea);border-radius:12px;padding:10px 12px;color:var(--tinta)}
+.meto button b{display:block;font-size:14px}
+.meto button span{display:block;font-size:12.3px;color:var(--gris);line-height:1.35;margin-top:2px}
+.meto button:hover{border-color:var(--acero-claro)}
+.meto button[aria-pressed="true"]{border-color:var(--tinta);box-shadow:0 0 0 2px var(--tinta);background:var(--papel)}
+
+.tip{display:flex;gap:12px;background:#FFF8E6;border:1px solid #F3DDA0;border-radius:12px;padding:13px 15px;font-size:14px;color:#6B4E00;margin-bottom:18px}
+.tip svg{width:22px;height:22px;color:#C98200;flex:none;margin-top:1px}
+.tip strong{color:#523B00}
+.aviso{background:var(--brasa-suave);border:1px solid #F3C7B5;border-radius:12px;padding:13px 15px;font-size:14px;color:var(--aviso);margin-bottom:16px}
+.okbox{background:var(--forjado-suave);border:1px solid #A9DCCF;border-radius:12px;padding:13px 15px;font-size:14px;color:#0B5A4E;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
+/* Inicio */
+.hero{background:var(--tinta);color:#EAF1F7;border-radius:22px;padding:40px 36px;position:relative;overflow:hidden;margin-bottom:26px;box-shadow:var(--sombra-alta)}
+.hero::before{content:"";position:absolute;right:-80px;top:-80px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(228,87,46,.55),transparent 65%)}
+.hero::after{content:"";position:absolute;left:30%;bottom:-140px;width:420px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(14,140,122,.35),transparent 65%)}
+.hero>*{position:relative;z-index:1}
+@media(max-width:600px){.hero{padding:28px 20px;border-radius:18px}}
+.eyebrow{font:600 11.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#8FA7BE;margin:0 0 14px}
+.hero h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,5.4vw,58px);line-height:.98;letter-spacing:-.035em;margin:0 0 16px;max-width:17ch}
+.hero h1 em{font-style:normal;color:var(--brasa)}
+.hero p.lede{max-width:62ch;font-size:18px;color:#C3D3E2;margin:0 0 24px}
+.hero .actions .btn-ghost{background:transparent;color:#fff;border-color:#4A6787}
+.hero .actions .btn-ghost:hover{border-color:#fff}
+.draft{margin-top:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:14.5px}
+.sec-title{font-family:var(--display);font-weight:800;font-size:24px;letter-spacing:-.02em;margin:34px 0 6px}
+.sec-sub{color:var(--gris);margin:0 0 16px}
+.journey{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.jstop{background:#fff;border:1px solid var(--linea);border-radius:14px;padding:16px;position:relative}
+.jstop .ji{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;background:var(--c);margin-bottom:10px}
+.jstop .ji svg{width:20px;height:20px}
+.jstop b{display:block;font-size:15px;margin-bottom:2px}
+.jstop span{display:block;font-size:13px;color:var(--gris);line-height:1.45}
+.jstop .jn{position:absolute;top:12px;right:14px;font:700 12px var(--mono);color:var(--acero-claro)}
+@media(max-width:900px){.journey{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.journey{grid-template-columns:1fr}}
+
+.parts{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.part{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--linea);border-radius:12px;padding:12px 14px}
+.part .pi{width:34px;height:34px;border-radius:10px;background:color-mix(in srgb,var(--c) 14%,#fff);color:var(--c);display:grid;place-items:center;flex:none}
+.part b{display:block;font-size:14.5px}
+.part span{display:block;font-size:12.8px;color:var(--gris);line-height:1.4}
+
+.examples{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.excard{background:#fff;border:1px solid var(--linea);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--sombra);position:relative;overflow:hidden;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.excard:hover{transform:translateY(-3px);box-shadow:var(--sombra-alta)}
+.excard::before{content:"";position:absolute;left:0;top:0;right:0;height:5px;background:var(--c)}
+.excard .emo{font-size:32px;line-height:1}
+.excard .area{font:700 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--acero-claro)}
+.excard b{font-family:var(--display);font-size:18px;letter-spacing:-.01em;line-height:1.15}
+.excard p{margin:0;font-size:13.5px;color:var(--gris);flex:1}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff);border-radius:999px;padding:3px 9px;align-self:flex-start}
+
+/* Clave */
+.keyrow{display:flex;gap:8px}
+.keyrow input{flex:1;font-family:var(--mono);font-size:14px}
+.eye{width:46px;flex:none;border:1.5px solid var(--linea);background:#fff;border-radius:10px;color:var(--acero);display:grid;place-items:center}
+.light{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--papel);margin-top:14px;font-size:14.5px;font-weight:600}
+.light .bulbo{width:14px;height:14px;border-radius:50%;background:#B8C5D3;box-shadow:0 0 0 4px rgba(184,197,211,.3);flex:none}
+.light[data-s="ok"] .bulbo{background:#16A34A;box-shadow:0 0 0 4px rgba(22,163,74,.22)}
+.light[data-s="err"] .bulbo{background:var(--brasa);box-shadow:0 0 0 4px rgba(228,87,46,.22)}
+.light[data-s="wait"] .bulbo{background:#F59E0B;box-shadow:0 0 0 4px rgba(245,158,11,.25)}
+.olsteps{list-style:none;padding:0;margin:0;counter-reset:o;display:flex;flex-direction:column;gap:12px}
+.olsteps li{counter-increment:o;display:flex;gap:12px;font-size:14.5px;align-items:flex-start}
+.olsteps li::before{content:counter(o);width:28px;height:28px;border-radius:50%;background:var(--brasa-suave);color:var(--brasa);font:700 13px var(--mono);display:grid;place-items:center;flex:none}
+
+/* Acordeones */
+.acc{background:#fff;border:1px solid var(--linea);border-radius:var(--r);margin-bottom:12px;box-shadow:var(--sombra);overflow:hidden}
+.acc>summary{list-style:none;cursor:pointer;padding:15px 18px;display:flex;align-items:center;gap:12px}
+.acc>summary::-webkit-details-marker{display:none}
+.acc>summary .ai{width:36px;height:36px;border-radius:10px;background:var(--papel);color:var(--acero);display:grid;place-items:center;flex:none}
+.acc[open]>summary .ai{background:var(--tinta);color:#fff}
+.acc>summary b{font-family:var(--display);font-size:17px;display:block}
+.acc>summary small{display:block;color:var(--gris);font-size:13px}
+.acc>summary .chev{margin-left:auto;transition:transform .2s;color:var(--acero-claro)}
+.acc[open]>summary .chev{transform:rotate(180deg)}
+.acc .inner{padding:4px 18px 18px;border-top:1px solid var(--linea-2)}
+.acc .inner>*:first-child{margin-top:14px}
+.prompt-ta{font-family:var(--mono);font-size:12.3px;min-height:130px;background:#FBFDFE}
+
+/* Resumen lateral */
+.sum h3{margin-bottom:10px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.stat{background:var(--papel);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font:800 24px var(--display);letter-spacing:-.02em;line-height:1.1}
+.stat span{font-size:12.3px;color:var(--gris)}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.checks li{display:flex;gap:9px;align-items:center;color:var(--gris)}
+.checks li .ck{width:20px;height:20px;border-radius:50%;border:2px solid var(--linea);display:grid;place-items:center;flex:none}
+.checks li.on{color:var(--tinta)}
+.checks li.on .ck{background:var(--forjado);border-color:var(--forjado);color:#fff}
+.checks li .ck svg{width:12px;height:12px}
+.docname{margin-top:14px;padding:11px 13px;border-radius:11px;background:var(--tinta);color:#C3D3E2;font-size:13.5px}
+.docname b{color:#fff}
+
+/* Generación */
+.agents{display:flex;flex-direction:column;gap:10px}
+.agent{background:#fff;border:1px solid var(--linea);border-radius:var(--r);box-shadow:var(--sombra);overflow:hidden;transition:border-color .2s}
+.agent-h{display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer}
+.agent .ai{width:42px;height:42px;border-radius:12px;background:color-mix(in srgb,var(--c) 14%,#fff);color:var(--c);display:grid;place-items:center;flex:none;transition:all .2s}
+.agent .ai svg{width:20px;height:20px}
+.agent-t{flex:1;min-width:0}
+.agent-t b{display:block;font-family:var(--display);font-size:16.5px}
+.agent-t span{display:block;font-size:13px;color:var(--gris)}
+.pill{font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 10px;background:var(--linea-2);color:var(--gris);white-space:nowrap}
+.agent[data-s="run"]{border-color:#F59E0B}
+.agent[data-s="run"] .ai{background:var(--c);color:#fff;animation:pulse 1s infinite alternate}
+.agent[data-s="run"] .pill{background:#FFF1D6;color:#8A5A00}
+.agent[data-s="ok"] .ai{background:var(--c);color:#fff}
+.agent[data-s="ok"] .pill{background:var(--forjado-suave);color:var(--forjado)}
+.agent[data-s="err"]{border-color:var(--brasa)}
+.agent[data-s="err"] .pill{background:var(--brasa-suave);color:var(--brasa)}
+.agent-b{display:none;padding:4px 18px 16px 72px;font-size:14px;border-top:1px solid var(--linea-2);background:#FBFDFE}
+.agent.open .agent-b{display:block}
+@media(max-width:600px){.agent-b{padding-left:18px}}
+@keyframes pulse{from{transform:scale(1);box-shadow:0 0 0 0 rgba(228,87,46,.5)}to{transform:scale(1.06);box-shadow:0 0 0 10px rgba(228,87,46,0)}}
+.forging{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:14px;background:var(--tinta);color:#fff;margin-bottom:16px}
+.forging .spark{width:44px;height:44px;border-radius:12px;background:var(--brasa);display:grid;place-items:center;flex:none;animation:pulse 1s infinite alternate}
+.forging.done .spark{background:var(--forjado);animation:none}
+.forging.err .spark{animation:none}
+.forging b{font-family:var(--display);font-size:18px;display:block}
+.forging span{font-size:14px;color:#C3D3E2}
+.mini-list{margin:10px 0 0;padding:0;list-style:none}
+.mini-list li{padding:5px 0;border-bottom:1px solid var(--linea-2)}
+.mini-list li:last-child{border-bottom:0}
+.code{display:inline-block;font:700 11px var(--mono);border-radius:5px;padding:1px 6px;margin-right:6px;background:var(--linea-2);color:var(--acero)}
+
+/* Guía */
+.res-head{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.res-head h2{font-family:var(--display);font-weight:800;font-size:clamp(24px,3vw,32px);letter-spacing:-.02em;margin:0;flex:1;min-width:240px;line-height:1.1}
+.doc{background:#fff;border:1px solid var(--linea);border-radius:18px;box-shadow:var(--sombra-alta);padding:40px 44px;max-width:900px;margin:0 auto}
+@media(max-width:700px){.doc{padding:22px 16px}}
+.doc-h{border-bottom:3px solid var(--tinta);padding-bottom:18px;margin-bottom:26px}
+.doc-kind{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--brasa);margin:0 0 6px}
+.doc-h h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,3.4vw,36px);letter-spacing:-.025em;line-height:1.05;margin:0 0 12px}
+.meta{display:flex;flex-wrap:wrap;gap:6px}
+.meta span{font-size:12.8px;font-weight:600;background:var(--papel);color:var(--acero);border-radius:999px;padding:4px 11px}
+.dsec{margin-bottom:28px}
+.dsec h2{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.01em;margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.dsec h2 .num{width:28px;height:28px;border-radius:8px;background:var(--tinta);color:#fff;font:700 13px var(--mono);display:grid;place-items:center;flex:none}
+.dsec p{margin:0 0 10px;max-width:75ch}
+.sublab{font-size:13px;font-weight:700;color:var(--acero-claro);margin:14px 0 6px}
+.row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--linea-2);font-size:14.5px;align-items:flex-start}
+.row:last-child{border-bottom:0}
+.row .code{margin-top:2px;flex:none}
+.code.cg{background:#E6F0FA;color:var(--c-ctx)}
+.code.ce{background:#EEEAFB;color:var(--c-comp)}
+.code.bl{background:var(--forjado-suave);color:var(--forjado)}
+.code.tm{background:var(--tinta);color:#fff}
+.row .hrs{margin-left:auto;font-size:12.5px;color:var(--gris);white-space:nowrap}
+.blk{font-weight:700;margin:16px 0 4px;display:flex;gap:8px;align-items:baseline}
+.blk small{font-weight:500;color:var(--gris)}
+.tbl-wrap{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:14px}
+table.t th{background:var(--tinta);color:#fff;text-align:left;padding:9px 11px;font-size:12.5px;font-weight:700}
+table.t td{padding:9px 11px;border-bottom:1px solid var(--linea-2);vertical-align:top}
+table.t tr:nth-child(even) td{background:#FAFCFE}
+.peso{font-weight:800;color:var(--brasa);white-space:nowrap}
+.note{margin-top:12px;padding:11px 14px;background:var(--papel);border-left:4px solid var(--forjado);border-radius:8px;font-size:14px}
+.demo-flag{background:#FFF8E6;border:1px solid #F3DDA0;color:#6B4E00;border-radius:12px;padding:11px 15px;font-size:14px;margin:0 auto 16px;max-width:900px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.demo-flag svg{color:#C98200}
+
+/* Navegación inferior */
+.bottomnav{position:fixed;left:0;right:0;bottom:0;z-index:35;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--linea)}
+.bn-in{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.bn-hint{flex:1;text-align:center;font-size:14px;color:var(--gris)}
+.bn-hint b{color:var(--tinta)}
+@media(max-width:600px){.bn-hint{display:none}.bn-in{justify-content:space-between}}
+
+/* Modal */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(15,34,55,.55);display:none;align-items:flex-start;justify-content:center;padding:6vh 16px;overflow:auto}
+.modal.on{display:flex}
+.modal-box{background:#fff;border-radius:18px;max-width:760px;width:100%;box-shadow:var(--sombra-alta);overflow:hidden}
+.modal-head{display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--tinta);color:#fff}
+.modal-head h2{font-family:var(--display);font-size:22px;margin:0;flex:1}
+.modal-head button{background:transparent;border:1px solid #4A6787;color:#fff;border-radius:9px;padding:6px 10px}
+.modal-body{padding:18px 20px 22px}
+.glos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.glos{grid-template-columns:1fr}}
+.glos div{background:var(--papel);border-radius:12px;padding:12px 14px}
+.glos b{display:block;font-family:var(--display);font-size:16px;margin-bottom:2px}
+.glos span{font-size:13.8px;color:var(--acero)}
+.hist{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--linea);border-radius:12px;margin-bottom:8px}
+.hist-t{flex:1;min-width:0;cursor:pointer}
+.hist-t b{display:block;font-size:15px}
+.hist-t span{font-size:12.8px;color:var(--gris)}
+.hist:hover{border-color:var(--acero-claro)}
+.iconbtn{width:34px;height:34px;border-radius:9px;border:1.5px solid var(--linea);background:#fff;color:var(--acero);display:grid;place-items:center;padding:0}
+.iconbtn:hover{border-color:var(--brasa);color:var(--brasa)}
+.empty{text-align:center;color:var(--gris);padding:30px 10px}
+
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--tinta);color:#fff;padding:11px 18px;border-radius:12px;font-size:14.5px;font-weight:600;opacity:0;pointer-events:none;transition:all .25s;z-index:70;max-width:90vw;text-align:center;box-shadow:var(--sombra-alta)}
+.toast.on{opacity:1;transform:translateX(-50%)}
+footer{max-width:1180px;margin:0 auto;padding:0 16px 30px;font-size:13px;color:#6E8299}
+footer hr{border:0;border-top:1px solid var(--linea);margin:0 0 14px}
+
+@media print{
+  body{background:#fff;padding:0}
+  .topbar,.bottomnav,.res-head,.demo-flag,.okbox,footer,.toast,.modal{display:none!important}
+  main{padding:0;max-width:none}
+  .screen{display:none!important}
+  
+  .doc{box-shadow:none;border:0;padding:0;max-width:none}
+  .dsec{break-inside:avoid-page}
+  table.t th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+/* ══ v2 ══ */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:640px){.grid3{grid-template-columns:1fr}}
+.feats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:960px){.feats{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.feats{grid-template-columns:1fr}}
+.feat{background:#fff;border:1px solid var(--linea);border-radius:14px;padding:16px;border-top:4px solid var(--c)}
+.feat .pi{width:38px;height:38px;border-radius:11px;background:color-mix(in srgb,var(--c) 14%,#fff);color:var(--c);display:grid;place-items:center;margin-bottom:10px}
+.feat b{display:block;font-family:var(--display);font-size:17px;margin-bottom:3px}
+.feat span{display:block;font-size:13.5px;color:var(--gris);line-height:1.45}
+.importbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--tinta);color:#EAF1F7;border-radius:var(--r);padding:14px 16px;margin-bottom:18px}
+.importbar .pi{width:40px;height:40px;border-radius:11px;background:var(--brasa);display:grid;place-items:center;flex:none}
+.importbar b{display:block;font-size:15px}
+.importbar span{display:block;font-size:13.3px;color:#A9C0D4}
+.importbar .btn-dark{background:#fff;color:var(--tinta)}
+.importbar .btn-dark:hover{background:#EAF1F7}
+.inacc{border-top:1px solid var(--linea-2);margin-top:4px;padding-top:12px}
+.inacc>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--acero)}
+.inacc>summary::-webkit-details-marker{display:none}
+.inacc>summary .chev{margin-left:auto;transition:transform .2s;color:var(--acero-claro)}
+.inacc[open]>summary .chev{transform:rotate(180deg)}
+.rec{display:inline-block;font:700 11px var(--texto);background:var(--forjado-suave);color:var(--forjado);border-radius:999px;padding:2px 8px;vertical-align:2px;margin-left:4px}
+.checkgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:560px){.checkgrid{grid-template-columns:1fr}}
+.checkgrid label{display:flex;gap:9px;align-items:center;margin:0;padding:9px 11px;border-radius:10px;background:var(--papel);font-weight:500;color:var(--tinta);cursor:pointer;font-size:14px}
+.checkgrid input{width:18px;height:18px;accent-color:var(--forjado);margin:0}
+.checkgrid label:has(input:checked){background:var(--forjado-suave)}
+.drop{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;border:2px dashed var(--linea);border-radius:14px;padding:24px;cursor:pointer;color:var(--acero);margin:0;font-weight:500}
+.drop svg{width:30px;height:30px;color:var(--brasa)}
+.drop b{font-size:15px;color:var(--tinta)}
+.drop span{font-size:13px;color:var(--gris)}
+.drop.over,.drop:hover{border-color:var(--brasa);background:var(--brasa-suave)}
+
+
+/* ══ Estilos propios de la app (se añaden a forja-base.css). Prefijo fa- para no chocar con clases de Forja ══ */
+.logo .anv{background:linear-gradient(135deg,var(--brasa),#C98200)}
+.hero{padding:44px 38px 30px}.hero h1{max-width:20ch}.fa-inicio{margin:14px 0 0;font-size:14px;color:#C3D3E2}.fa-inicio:empty{display:none}.fa-inicio b{color:#fff}
+/* autores con ORCID */
+.fa-autores{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,.14)}.fa-autores-cap{font:600 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#8FA7BE;width:100%;margin-bottom:-4px}
+.fa-autor{display:flex;gap:11px;align-items:center}.fa-autor b{display:block;color:#fff;font:700 16px var(--display)}.fa-autor small{display:block;color:#9DB6CD;font-size:12.5px;max-width:34ch}.fa-av{width:44px;height:44px;border-radius:14px;background:var(--c);color:#fff;display:grid;place-items:center;font:800 15px var(--display);flex:none;box-shadow:0 10px 20px -12px var(--c)}.fa-x{font:300 26px var(--display);color:#5D7C9B}
+.fa-orcid{display:block;margin-top:2px;font:600 11.5px var(--mono);letter-spacing:.02em;color:#7FD6C4!important;text-decoration:none}.fa-orcid:hover{text-decoration:underline}.fa-idea{width:100%;margin:2px 0 0;font-size:13px;color:#9DB6CD;max-width:72ch}
+/* zonas «dónde va cada cosa» */
+.zonas{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.zonas{grid-template-columns:1fr}}.zona{border-radius:16px;padding:14px 16px;border:2px solid}.zona.l{border-color:#9FD9C4;background:var(--forjado-suave)}.zona.n{border-color:#E9C46A;background:#FFF8E6}.zona h4{margin:0 0 6px;font-family:var(--display);font-size:18px}.zona ul{margin:0;padding-left:18px;font-size:14px;line-height:1.7}
+.sec-title+.zonas,.sec-title+.journey{margin-top:14px}
+/* formularios y utilidades */
+.field input[type=text],.field input[type=number],.field select,.field textarea{width:100%;padding:10px 12px;border:1.5px solid var(--linea);border-radius:10px;font:15px var(--texto);background:#fff;color:var(--tinta)}.field textarea{line-height:1.55;resize:vertical}.field label{display:block;font:700 13px var(--texto);color:var(--acero);margin-bottom:5px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brasa);box-shadow:0 0 0 3px rgba(228,87,46,.18)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:760px){.grid3,.grid2{grid-template-columns:1fr}}
+.card .actions{margin-top:12px}.card h3{margin-top:0}.fa-chk{display:flex;gap:8px;align-items:center;font:500 14.5px var(--texto);cursor:pointer}
+.fa-chip{display:inline-block;font:700 11.5px var(--texto);border-radius:999px;padding:3px 10px;background:var(--linea-2);color:var(--acero)}.fa-chip.ok{background:var(--forjado-suave);color:#0B5A4E}.fa-chip.aviso{background:#FFF1D6;color:#7A4B00}.fa-chip.error{background:var(--brasa-suave);color:var(--aviso)}
+.fa-pre{white-space:pre-wrap;font:12.5px/1.5 var(--mono);background:#0B1C2E;color:#D6E4F0;border-radius:12px;padding:12px;max-height:300px;overflow:auto}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--linea);border-top-color:var(--brasa);border-radius:50%;animation:fa-s .8s linear infinite;vertical-align:-2px}@keyframes fa-s{to{transform:rotate(360deg)}}
+.fa-foot{max-width:1180px;margin:10px auto 0;padding:0 16px 110px}.fa-foot hr{border:0;border-top:1px solid var(--linea);margin:0 0 16px}.fa-foot p{margin:0;font-size:12.8px;color:#6E8299;max-width:76ch;line-height:1.55}
+.glos div{display:block;margin-bottom:12px}.glos b{display:block}
+table{border-collapse:collapse;width:100%;font-size:13.8px}th{background:var(--papel);color:var(--acero);font:700 11px var(--mono);letter-spacing:.07em;text-transform:uppercase;text-align:left}td,th{padding:10px 12px;border-bottom:1px solid var(--linea-2);vertical-align:top}.table-wrap{overflow-x:auto}
+/* barra superior con muchos pasos: solo el actual lleva nombre (evita desbordes) */
+.tb-in{gap:10px}.stepper{min-width:0;flex:1 1 auto;justify-content:center;gap:2px}.sdot:not([data-state="now"]) .lbl{display:none}.sdot{padding-left:4px;padding-right:4px}.sline{min-width:8px;flex:0 1 22px}.logo,.tb-tools{flex:none}
+@media(max-width:900px){.tb-btn .lbl{display:none}}@media(max-width:720px){.hero{padding:28px 20px 24px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* ── InternacionalIA ── */
+.fa-act2{margin-top:10px}.fa-act2 .btn{font-size:14px}
+.fa-h3{margin:0 0 4px;font:700 18px var(--display)}.fa-h4{margin:20px 0 6px;font:700 15px var(--display);color:var(--acero)}
+.fa-titulo{margin:0 0 8px;font:700 21px/1.25 var(--display);display:block}
+.fa-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.fa-chip.pot0,.fa-chip.pot1{background:var(--brasa-suave);color:var(--aviso)}.fa-chip.pot2{background:#FFF1D6;color:#7A4B00}.fa-chip.pot3,.fa-chip.pot4{background:var(--forjado-suave);color:#0B5A4E}
+.fa-ul{margin:6px 0;padding-left:20px;line-height:1.6;font-size:14.5px}.fa-ul li{margin-bottom:6px}.fa-ol{list-style:decimal}.fa-ol textarea{width:100%;margin-top:6px;padding:8px 10px;border:1.5px solid var(--linea);border-radius:10px;font:14px var(--texto)}
+.fa-fac{border:1.5px solid var(--linea);border-left:5px solid var(--forjado);border-radius:12px;padding:10px 14px;margin:8px 0;background:#fff}.fa-fac.dudoso{border-left-color:#C98200;background:#FFFCF3}
+.fa-fh{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.fa-fh b{font:700 15px var(--display);margin-right:4px}.fa-fac p{margin:6px 0}.fa-ev{font-size:13.5px;color:var(--acero)}.fa-marca{font:600 12.5px var(--texto);color:#8A5A00;margin:4px 0 0}
+.fa-cmp{border:1.5px solid var(--linea);border-radius:12px;padding:10px 14px;background:#fff}.fa-adv{margin-top:18px;padding:10px 14px;border-radius:10px;background:var(--papel);font-size:13px;color:var(--gris);line-height:1.55}
+/* barras de efecto (HTML, responsive) */
+.fa-bars{margin:10px 0}.fa-leyenda{font-size:13px;margin:0 0 6px}.fa-sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin:0 4px 0 10px;vertical-align:-1px}.fa-sw.base{background:#1F6FB2}.fa-sw.sim{background:#C06A1A}
+.fa-eje{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) 64px;font:600 10.5px var(--mono);color:var(--gris);text-transform:uppercase;letter-spacing:.06em}.fa-eje span:first-child{grid-column:2;text-align:left}.fa-eje span:nth-child(2){display:none}.fa-eje span:last-child{grid-column:2;text-align:right;margin-top:-13px}
+.fa-bar{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) 64px;gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--linea-2)}.fa-bn{font-size:13.5px;line-height:1.3}.fa-bn em{color:var(--gris);font-style:normal;font-size:12px}
+.fa-bt{position:relative;height:20px;background:linear-gradient(90deg,transparent calc(50% - .5px),var(--acero-claro) calc(50% - .5px),var(--acero-claro) calc(50% + .5px),transparent calc(50% + .5px)),var(--papel);border-radius:6px}
+.fa-f{position:absolute;top:3px;height:14px;border-radius:3px}.fa-f.pos{background:var(--forjado)}.fa-f.neg{background:var(--brasa)}.fa-f.cero{background:var(--gris)}
+.fa-f.a:not(:only-child){top:2px;height:8px}.fa-f.b{top:11px;height:8px}.fa-f.a:not(:only-child).pos,.fa-f.a:not(:only-child).neg,.fa-f.a:not(:only-child).cero{background:#1F6FB2}.fa-f.b.pos,.fa-f.b.neg,.fa-f.b.cero{background:#C06A1A}
+.fa-bv{font:700 12.5px var(--mono);text-align:right;white-space:nowrap}.fa-bm{grid-column:1/-1;display:block;color:var(--gris);font-size:12px;margin:-2px 0 4px}
+@media(max-width:640px){.fa-bar,.fa-eje{grid-template-columns:minmax(0,1fr) 56px}.fa-bn{grid-column:1/-1}.fa-eje span:first-child,.fa-eje span:last-child{grid-column:1}}
+/* dimensiones y escala */
+.fa-bloque{margin:18px 0 4px;padding-left:10px;border-left:4px solid var(--c);font:700 14px var(--display);color:var(--acero)}
+.fa-dim{display:grid;grid-template-columns:minmax(0,1.1fr) auto minmax(0,1fr);gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--linea-2)}.fa-dn{display:block}.fa-dn b{display:block;font-size:14.5px}.fa-dn small{display:block;color:var(--gris);font-size:12px}
+.fa-esc{display:flex;gap:4px}.fa-esc button{min-width:40px;height:38px;border:1.5px solid var(--linea);background:#fff;border-radius:10px;font:700 14px var(--texto);color:var(--acero);cursor:pointer}.fa-esc button[aria-pressed=true]{background:var(--tinta);border-color:var(--tinta);color:#fff}.fa-esc button:disabled{opacity:.55;cursor:default}.fa-esc button:focus-visible{outline:3px solid rgba(228,87,46,.4)}
+.fa-nota{width:100%;padding:8px 10px;border:1.5px solid var(--linea);border-radius:10px;font:13.5px var(--texto)}
+@media(max-width:820px){.fa-dim{grid-template-columns:minmax(0,1fr)}.fa-esc button{flex:1}}
+.fa-de{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,.8fr) minmax(0,.8fr) auto;gap:8px;align-items:end;padding:8px 0;border-top:1px solid var(--linea-2)}@media(max-width:760px){.fa-de{grid-template-columns:minmax(0,1fr)}}
+.fa-presets{display:flex;flex-wrap:wrap;gap:8px}
+.fa-det{margin-top:16px;border:1.5px dashed var(--linea);border-radius:12px;padding:10px 14px;background:#FFFCF3}.fa-det summary{cursor:pointer;font:700 14px var(--texto)}
+#dimsErr:empty{display:none}#dimsErr:not(:empty){display:block!important}
+.muted{color:var(--gris)}.table-wrap{max-width:100%}
+
+.card .help+.field,.card .help+.actions,.card .help+.table-wrap{margin-top:10px}.card .help+.grid2,.card .help+.fa-presets{margin-top:10px}
+</style></head>
+<body>
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m10 8 6 4-6 4z"/></symbol>
+  <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></symbol>
+  <symbol id="i-quiz" viewBox="0 0 24 24"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8M13 12h8M13 18h8"/></symbol>
+  <symbol id="i-cards" viewBox="0 0 24 24"><rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8M10 12h4"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
+  <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 3v4M17 5h4M5 17v4M3 19h4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></symbol>
+  <symbol id="i-form" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+  <symbol id="i-tablet" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M12 18h.01"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M12 18h.01"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M6 14l1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h7M9 11h5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18M7 21h10M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></symbol>
+<symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16"/><path d="M14 10h5a1 1 0 0 1 1 1v10"/><path d="M3 21h18"/><path d="M8 8h2M8 12h2M8 16h2M17 14h.01M17 18h.01"/></symbol>
+</svg>
+<div class="topbar">
+  <div class="tb-in">
+    <button class="logo" id="goHome" type="button" aria-label="Inicio"><span class="anv"><svg class="i"><use href="#i-globe"/></svg></span><span>Internacional<em>IA</em></span></button>
+    <nav class="stepper" id="stepper" aria-label="Pasos"></nav>
+    <div class="tb-tools"><button class="tb-btn" id="btnIA" type="button"><svg class="i"><use href="#i-key"/></svg><span class="lbl">IA</span></button><button class="tb-btn" id="btnHelp" type="button"><svg class="i"><use href="#i-help"/></svg><span class="lbl">Ayuda</span></button></div>
+  </div>
+  <div class="progress"><span id="progBar"></span></div>
+</div>
+
+<main id="app">
+<!-- 0 · INICIO: portada con el qué, el para quién y los autores -->
+<section class="screen" data-step="0">
+  <div class="hero">
+    <p class="eyebrow">Organización de Empresas · Diagnóstico exploratorio con IA · Universidad Miguel Hernández de Elche</p>
+    <h1>¿Qué <em>favorece o frena</em> que una empresa se internacionalice rápido?</h1>
+    <p class="lede">Describe una empresa con 15 dimensiones (que puedes cambiar) y la IA razona un diagnóstico exploratorio: factores a favor, limitantes y preguntas pendientes. El código comprueba que cada factor se apoya en un dato tuyo, y la simulación, las pruebas de fiabilidad y los casos docentes completan la herramienta.</p>
+    <div class="actions"><button class="btn btn-primary btn-big" id="btnStart" type="button"><svg class="i"><use href="#i-play"/></svg>Empezar</button><button class="btn btn-ghost btn-big" id="btnEjemplo" type="button"><svg class="i"><use href="#i-eye"/></svg>Ver un ejemplo</button></div>
+    
+    <div class="actions fa-act2"><button class="btn btn-ghost" id="btnHubCasos" type="button"><svg class="i"><use href="#i-cards"/></svg>Casos docentes</button><button class="btn btn-ghost" id="btnHubAlu" type="button"><svg class="i"><use href="#i-quiz"/></svg>Alumnado</button><button class="btn btn-ghost" id="btnProjOpen" type="button"><svg class="i"><use href="#i-upload"/></svg>Abrir proyecto</button><button class="btn btn-ghost" id="btnProjSave" type="button"><svg class="i"><use href="#i-save"/></svg>Guardar proyecto</button><input type="file" id="fileProj" accept=".json,application/json" hidden></div>
+    <p class="fa-inicio" id="inicioProj"></p>
+    <div class="fa-autores"><span class="fa-autores-cap">Realizada entre</span>
+      <div class="fa-autor"><span class="fa-av" style="--c:#E4572E">FB</span><div><b>Fernando Borrás Rocher</b><small>Universidad Miguel Hernández de Elche</small><a class="fa-orcid" href="https://orcid.org/0000-0002-5519-4573" target="_blank" rel="noopener">ORCID 0000-0002-5519-4573</a></div></div><span class="fa-x">×</span>
+      <div class="fa-autor"><span class="fa-av" style="--c:#0E8C7A">MA</span><div><b>María Antonia Vaquero Sánchez</b><small>Universidad Miguel Hernández de Elche</small><a class="fa-orcid" href="https://orcid.org/0009-0000-1724-5301" target="_blank" rel="noopener">ORCID 0009-0000-1724-5301</a></div></div>
+      </div>
+  </div>
+  <h2 class="sec-title">Cómo funciona</h2>
+  <div class="journey" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+    <div class="jstop" style="--c:#6B4FD8"><span class="jn">1</span><div class="ji"><svg class="i"><use href="#i-building"/></svg></div><b>Describes la empresa</b><span>15 dimensiones editables, de 1 a 5 o «?» si no lo sabes. O las rellenas desde un texto.</span></div>
+    <div class="jstop" style="--c:#E4572E"><span class="jn">2</span><div class="ji"><svg class="i"><use href="#i-sparkles"/></svg></div><b>La IA razona</b><span>Factores a favor y limitantes, con el mecanismo y la perspectiva teórica de cada uno.</span></div>
+    <div class="jstop" style="--c:#0E8C7A"><span class="jn">3</span><div class="ji"><svg class="i"><use href="#i-shield"/></svg></div><b>El código comprueba</b><span>Que cada factor cita un dato tuyo y que lo que no sabes no se inventa.</span></div>
+    <div class="jstop" style="--c:#1F6FB2"><span class="jn">4</span><div class="ji"><svg class="i"><use href="#i-target"/></svg></div><b>Exploras y enseñas</b><span>Simulas escenarios, mides la estabilidad y generas casos para clase.</span></div>
+  </div>
+  <div class="aviso" style="margin-top:18px"><b>Qué es y qué no es.</b> Un diagnóstico exploratorio y de apoyo al análisis. No predice ni determina si una empresa debe internacionalizarse de forma acelerada, ni valida empíricamente los determinantes de la internacionalización. El resultado depende de la información que introduzcas y no sustituye un análisis académico o empresarial riguroso.</div>
+  <h2 class="sec-title">Dónde va cada cosa</h2>
+  <div class="zonas"><div class="zona l"><h4>Siempre en tu ordenador</h4><ul><li>Los datos de la empresa, los diagnósticos y los casos, guardados en este navegador</li><li>Tu clave de IA</li><li>Todas las comprobaciones y las descargas (Word, CSV, JSON)</li></ul></div>
+    <div class="zona n"><h4>Sale hacia tu proveedor de IA</h4><ul><li>El perfil de la empresa, con correos, teléfonos y DNI enmascarados y, si lo dejas marcado, sin el nombre de la empresa</li><li>Antes del primer envío ves exactamente lo que sale</li><li>No pegues datos personales ni confidenciales que no quieras enviar</li></ul></div></div>
+</section>
+
+<!-- 1 · EMPRESA -->
+<section class="screen" data-step="1">
+  <header class="sh" style="--c:#6B4FD8"><div class="sh-ico"><svg class="i"><use href="#i-building"/></svg></div><div><p class="sh-step">Paso 1 de 4</p><h2>Describe la empresa</h2><p class="sh-lede">Cuanto más concretos sean los datos, más fundado será el diagnóstico. Lo que no sepas, déjalo en «?»: la IA no lo supondrá y te preguntará por ello.</p></div></header>
+  <div class="card"><h3>Datos de la empresa</h3>
+    <div class="grid2"><div class="field"><label for="e_nombre">Nombre</label><input type="text" id="e_nombre" data-e="nombre" autocomplete="off"></div><div class="field"><label for="e_sector">Sector</label><input type="text" id="e_sector" data-e="sector"></div></div>
+    <div class="grid2"><div class="field"><label for="e_origen">Origen y antigüedad</label><input type="text" id="e_origen" data-e="origen"></div><div class="field"><label for="e_mercados">Mercados objetivo</label><input type="text" id="e_mercados" data-e="mercados"></div></div>
+    <div class="field"><label for="e_producto">Producto o servicio</label><textarea id="e_producto" data-e="producto" rows="2"></textarea></div>
+    <div class="field"><label for="e_situacion">Situación internacional actual</label><textarea id="e_situacion" data-e="situacion" rows="2"></textarea></div>
+    <div class="field"><label for="e_otros">Otros factores relevantes</label><textarea id="e_otros" data-e="otros" rows="2"></textarea></div>
+    <label class="fa-chk"><input type="checkbox" id="chkAnon" checked> No enviar el nombre de la empresa a la IA (se sustituye por «la empresa»)</label>
+    <p class="help">Si la empresa es real y los datos son confidenciales, revisa lo que escribes: todo lo que pongas aquí viaja a tu proveedor de IA (con el aviso previo).</p></div>
+  <div class="card"><h3>Rellenar desde un texto (opcional)</h3><p class="help" style="margin-top:0">Pega la descripción de una empresa o un caso. La IA propone un valor para cada dimensión con una cita literal; el código comprueba que la cita está de verdad en tu texto.</p>
+    <div class="field"><label for="txtLibre">Texto</label><textarea id="txtLibre" rows="6" placeholder="Pega aquí la descripción de la empresa…"></textarea></div>
+    <div class="actions"><button class="btn btn-ghost" id="btnExtrae" type="button"><svg class="i"><use href="#i-sparkles"/></svg>Proponer valores (1 llamada)</button></div><p class="help" id="extraeEstado" role="status"></p><div id="extraeRes"></div></div>
+  <div class="card"><h3>Dimensiones</h3><p class="help" style="margin-top:0">1 = muy bajo, 5 = muy alto; «?» = sin información. <span id="dimsCuenta"></span></p>
+    <div class="actions" style="margin:0 0 8px"><button class="btn btn-ghost btn-sm" id="btnDimsEdit" type="button"><svg class="i"><use href="#i-sliders"/></svg>Añadir, quitar o renombrar dimensiones</button></div><div id="dimsList"></div></div>
+</section>
+
+<!-- 2 · DIAGNÓSTICO -->
+<section class="screen" data-step="2">
+  <header class="sh" style="--c:#E4572E"><div class="sh-ico"><svg class="i"><use href="#i-sparkles"/></svg></div><div><p class="sh-step">Paso 2 de 4</p><h2>Diagnóstico exploratorio</h2><p class="sh-lede">La IA razona qué factores favorecen o limitan una internacionalización acelerada. Los factores con ⚠ no tienen un dato tuyo comprobable: tómalos como hipótesis.</p></div></header>
+  <div class="card"><div class="actions" style="margin-top:0"><button class="btn btn-primary btn-big" id="btnDiag" type="button"><svg class="i"><use href="#i-sparkles"/></svg>Diagnosticar (1 llamada)</button></div><p class="help" id="diagEstado" role="status" aria-live="polite"></p></div>
+  <div class="card" id="diagRes" aria-live="polite"></div>
+  <div class="card" id="diagDown"><h3>Descargar</h3><div class="actions" style="margin-top:0"><button class="btn btn-word" id="btnWord" type="button"><svg class="i"><use href="#i-doc"/></svg>Informe en Word</button><button class="btn btn-ghost" id="btnCsv" type="button">CSV de efectos</button><button class="btn btn-ghost" id="btnJson" type="button">Proyecto (JSON)</button></div><p class="help">El Word incluye también la simulación y las pruebas de fiabilidad si las has hecho. Ningún fichero contiene tu clave.</p></div>
+</section>
+
+<!-- 3 · SIMULACIÓN -->
+<section class="screen" data-step="3">
+  <header class="sh" style="--c:#1F6FB2"><div class="sh-ico"><svg class="i"><use href="#i-sliders"/></svg></div><div><p class="sh-step">Paso 3 de 4</p><h2>Simulación: ¿qué ocurriría si…?</h2><p class="sh-lede">Cambia una o varias dimensiones y compara el escenario con el diagnóstico base. El código avisa si la IA cambia cosas que no tocaste o se contradice.</p></div></header>
+  <div class="card"><div id="simAviso"></div><div id="simForm">
+    <p class="help" style="margin-top:0">Ejemplos rápidos:</p><div class="fa-presets" id="simPresets"></div>
+    <div class="grid2" style="margin-top:12px"><div class="field"><label for="simDim">Dimensión</label><select id="simDim"></select></div><div class="field"><label for="simVal">Nuevo valor</label><select id="simVal"><option value="0">? (sin información)</option><option>1</option><option>2</option><option>3</option><option>4</option><option value="5" selected>5</option></select></div></div>
+    <div class="actions"><button class="btn btn-ghost" id="btnSimAdd" type="button">Añadir cambio</button></div>
+    <ul class="fa-ul" id="simLista"></ul>
+    <div class="actions"><button class="btn btn-primary" id="btnSim" type="button"><svg class="i"><use href="#i-play"/></svg>Simular (1 llamada)</button></div><p class="help" id="simEstado" role="status" aria-live="polite"></p></div></div>
+  <div class="card" id="simRes" aria-live="polite"></div>
+</section>
+
+<!-- 4 · FIABILIDAD -->
+<section class="screen" data-step="4">
+  <header class="sh" style="--c:#0E8C7A"><div class="sh-ico"><svg class="i"><use href="#i-shield"/></svg></div><div><p class="sh-step">Paso 4 de 4</p><h2>Evaluación crítica de la IA</h2><p class="sh-lede">Un uso responsable exige comprobar los resultados: ¿es estable?, ¿respeta lo que no sabe?, ¿cada factor se apoya en un dato tuyo?</p></div></header>
+  <div class="card"><div id="fiabAviso"></div></div>
+  <div id="fiabCtl">
+    <div class="card"><h3 class="fa-h3">1 · Estabilidad</h3><p class="help" style="margin-top:0">Repite el mismo diagnóstico y mide cuánto cambian el potencial y los efectos. Cada repetición es una llamada de pago.</p>
+      <div class="field" style="max-width:260px"><label for="estN">Repeticiones adicionales</label><select id="estN"><option value="1">1 (2 ejecuciones)</option><option value="2" selected>2 (3 ejecuciones)</option><option value="4">4 (5 ejecuciones)</option></select></div>
+      <div class="actions"><button class="btn btn-ghost" id="btnEstab" type="button">Medir la estabilidad</button></div><p class="help" id="estEstado" role="status" aria-live="polite"></p><div id="estRes"></div></div>
+    <div class="card"><h3 class="fa-h3">2 · Respeto a la información ausente</h3><p class="help" style="margin-top:0">Se oculta una dimensión que sí tenías valorada y se diagnostica de nuevo (1 llamada). Debe recibir efecto 0 y generar una pregunta.</p>
+      <div class="field" style="max-width:420px"><label for="siDim">Dimensión a ocultar</label><select id="siDim"></select></div>
+      <div class="actions"><button class="btn btn-ghost" id="btnSinInfo" type="button">Hacer la prueba</button></div><p class="help" id="siEstado" role="status" aria-live="polite"></p><div id="siRes"></div></div>
+  </div>
+  <div class="card"><h3 class="fa-h3">3 · Fundamentación de los factores</h3><p class="help" style="margin-top:0">Calculada por el código sobre el diagnóstico actual (sin llamadas).</p><div id="funRes"></div></div>
+</section>
+
+<!-- 5 · CASOS DOCENTES (sección fuera del recorrido) -->
+<section class="screen" data-step="5">
+  <header class="sh" style="--c:#C98200"><div class="sh-ico"><svg class="i"><use href="#i-cards"/></svg></div><div><p class="sh-step">Profesorado</p><h2>Casos docentes</h2><p class="sh-lede">La IA escribe un caso ficticio con las dimensiones sin nombrarlas, 5 preguntas y una guía con la solución de referencia. Tú lo revisas y lo editas antes de compartirlo.</p></div></header>
+  <div class="card"><div class="grid2"><div class="field"><label for="cSector">Sector</label><input type="text" id="cSector"></div><div class="field"><label for="cNivel">Nivel del alumnado</label><input type="text" id="cNivel"></div></div>
+    <div class="grid3"><div class="field"><label for="cAsig">Asignatura (opcional)</label><input type="text" id="cAsig"></div><div class="field"><label for="cTipo">Tipo de proceso</label><select id="cTipo"><option value="ambiguo">Ambiguo (mezcla)</option><option value="acelerado">Acelerado</option><option value="secuencial">Secuencial</option></select></div><div class="field"><label for="cPal">Palabras (aprox.)</label><input type="number" id="cPal" min="150" max="900" step="50"></div></div>
+    <div class="field"><label for="cNotas">Indicaciones adicionales (opcional)</label><textarea id="cNotas" rows="2" placeholder="Por ejemplo: que aparezca una empresa familiar, que el mercado objetivo sea Asia…"></textarea></div>
+    <div class="actions"><button class="btn btn-primary" id="btnCaso" type="button"><svg class="i"><use href="#i-sparkles"/></svg>Generar caso (1 llamada)</button><button class="btn btn-ghost" id="btnCasoEj" type="button"><svg class="i"><use href="#i-eye"/></svg>Ver el caso de ejemplo</button></div><p class="help" id="casoEstado" role="status" aria-live="polite"></p></div>
+  <div class="card" id="casoRes" aria-live="polite"></div>
+  <div class="card" id="casoDown"><h3>Compartir con el alumnado</h3><div class="actions" style="margin-top:0"><button class="btn btn-word" id="btnCasoWordAlu" type="button"><svg class="i"><use href="#i-doc"/></svg>Caso (Word)</button><button class="btn btn-word" id="btnCasoWordGuia" type="button"><svg class="i"><use href="#i-doc"/></svg>Guía del profesorado (Word)</button><button class="btn btn-ghost" id="btnCasoJsonAlu" type="button">Ficha para el alumnado (JSON, sin guía)</button><button class="btn btn-ghost" id="btnCasoJsonFull" type="button">Ficha completa (JSON)</button><button class="btn btn-ghost" id="btnCasoPractica" type="button">Probarlo como alumno</button></div><p class="help">La ficha para el alumnado se abre en esta misma app (sección «Alumnado») y no incluye la guía ni la referencia.</p></div>
+</section>
+
+<!-- 6 · ALUMNADO (sección fuera del recorrido) -->
+<section class="screen" data-step="6">
+  <header class="sh" style="--c:#6B4FD8"><div class="sh-ico"><svg class="i"><use href="#i-quiz"/></svg></div><div><p class="sh-step">Alumnado</p><h2>Analiza un caso y compáralo con la IA</h2><p class="sh-lede">Lee el caso, valora cómo influye cada dimensión en la aceleración y compara tu análisis con una referencia. Es para aprender: no hay nota.</p></div></header>
+  <div class="card"><h3 class="fa-h3">1 · Elige un caso</h3>
+    <div class="actions" style="margin-top:0"><button class="btn btn-ghost" id="btnAluEj" type="button"><svg class="i"><use href="#i-eye"/></svg>Caso de ejemplo (sin clave)</button><button class="btn btn-ghost" id="btnAluFile" type="button"><svg class="i"><use href="#i-upload"/></svg>Abrir un caso de mi profesor/a (.json)</button><input type="file" id="fileCaso" accept=".json,application/json" hidden></div>
+    <p class="help" style="margin-bottom:6px">O pide a la IA un caso nuevo (necesita tu clave; 1 llamada):</p>
+    <div class="grid2"><div class="field"><label for="aluSector">Sector</label><input type="text" id="aluSector"></div><div class="field"><label for="aluTipo">Tipo de proceso</label><select id="aluTipo"><option value="ambiguo">Ambiguo (mezcla)</option><option value="acelerado">Acelerado</option><option value="secuencial">Secuencial</option></select></div></div>
+    <div class="actions"><button class="btn btn-ghost" id="btnAluGen" type="button"><svg class="i"><use href="#i-sparkles"/></svg>Generar un caso con IA</button></div><p class="help" id="aluGenEstado" role="status" aria-live="polite"></p></div>
+  <div class="card" id="aluCaso"><div id="aluCasoTxt"></div></div>
+  <div class="card" id="aluAnalisis"><h3 class="fa-h3">2 · Tu análisis</h3><p class="help" style="margin-top:0">Para cada dimensión, ¿cuánto <b>frena (−2)</b> o <b>impulsa (+2)</b> que la empresa se internacionalice rápido? Pulsa otra vez para borrar. <span id="aluMarcadas"></span></p><div id="aluDims"></div>
+    <div class="grid2" style="margin-top:12px"><div class="field"><label for="aluPot">Potencial de internacionalización acelerada</label><select id="aluPot"></select></div><div class="field"><label for="aluEsc">Escenario más plausible</label><select id="aluEsc"></select></div></div>
+    <div class="field"><label for="aluJustif">Tu justificación</label><textarea id="aluJustif" rows="4" placeholder="Explica con tus palabras por qué…"></textarea></div>
+    <div class="actions"><button class="btn btn-primary" id="btnAluCierra" type="button">Cerrar mi análisis y comparar</button><button class="btn btn-ghost" id="btnAluReabre" type="button">Reabrir mi análisis</button></div></div>
+  <div class="card" id="aluComp"><h3 class="fa-h3">3 · Comparación</h3><div class="field" style="max-width:420px"><label for="aluRefSel">Comparar con</label><select id="aluRefSel"></select></div>
+    <div class="actions" style="margin-top:0"><button class="btn btn-ghost" id="btnAluRefIA" type="button"><svg class="i"><use href="#i-sparkles"/></svg>Pedir a la IA su propio diagnóstico</button></div><p class="help" id="aluRefEstado" role="status" aria-live="polite"></p><div id="aluCompRes"></div>
+    <div class="actions"><button class="btn btn-word" id="btnAluWord" type="button"><svg class="i"><use href="#i-doc"/></svg>Mi análisis (Word)</button><button class="btn btn-ghost" id="btnAluJson" type="button">JSON</button></div></div>
+</section>
+</main>
+
+<footer class="fa-foot"><hr><p><b>InternacionalIA</b> · Fernando Borrás Rocher y María Antonia Vaquero Sánchez · Universidad Miguel Hernández de Elche. Diagnóstico exploratorio de apoyo al análisis, no una predicción: la IA puede equivocarse y la decisión final es tuya. Tus datos se guardan solo en este navegador.</p></footer>
+<div class="bottomnav"><div class="bn-in"><button class="btn btn-ghost" id="navBack" type="button"><svg class="i"><use href="#i-left"/></svg>Atrás</button><div class="bn-hint" id="navHint"></div><button class="btn btn-primary" id="navNext" type="button"><span id="navNextTxt">Siguiente</span><svg class="i"><use href="#i-right"/></svg></button></div></div>
+
+<div class="modal" id="mIA" role="dialog" aria-modal="true" aria-labelledby="mIAT"><div class="modal-box"><div class="modal-head"><h2 id="mIAT">Inteligencia artificial</h2><button type="button" data-close>Cerrar</button></div><div class="modal-body">
+  <div class="field"><label for="selProv">Proveedor</label><select id="selProv"><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option></select></div>
+  <div class="field"><label for="apiKey">Tu clave de API</label><div class="keyrow"><input type="password" id="apiKey" autocomplete="off"><button class="eye" id="btnEye" type="button" aria-label="Ver"><svg class="i"><use href="#i-eye"/></svg></button></div></div>
+  <div class="field"><label for="modelo">Modelo</label><input type="text" id="modelo" list="modelos"><datalist id="modelos"></datalist></div>
+  <div class="actions"><button class="btn btn-ghost btn-sm" id="btnModelos" type="button">Ver los modelos de mi clave</button></div>
+  <p class="help" id="iaEstado">La clave se guarda solo en este navegador y se envía únicamente a tu proveedor. Cada persona usa la suya y paga su propio uso. Elige un modelo económico: este uso no necesita el más potente.</p></div></div></div>
+<div class="modal" id="mEnvio" role="dialog" aria-modal="true" aria-labelledby="mEnT"><div class="modal-box"><div class="modal-head"><h2 id="mEnT">Esto es lo que saldría hacia tu proveedor de IA</h2><button type="button" data-close>Cerrar</button></div><div class="modal-body"><div id="envioInfo"></div><pre class="fa-pre" id="envioTxt"></pre><label class="fa-chk" style="margin:12px 0"><input type="checkbox" id="envioOk"> He revisado la muestra y confirmo que puede salir de mi ordenador.</label><div class="actions"><button class="btn btn-primary" id="envioSi" type="button" disabled>Enviar y analizar</button><button class="btn btn-ghost" id="envioNo" type="button">Cancelar</button></div></div></div></div>
+<div class="modal" id="mHelp" role="dialog" aria-modal="true" aria-labelledby="mHelpT"><div class="modal-box"><div class="modal-head"><h2 id="mHelpT">Ayuda</h2><button type="button" data-close>Cerrar</button></div><div class="modal-body"><div class="glos" id="glos"></div></div></div></div>
+<div class="modal" id="mDims" role="dialog" aria-modal="true" aria-labelledby="mDimsT"><div class="modal-box"><div class="modal-head"><h2 id="mDimsT">Dimensiones del diagnóstico</h2><button type="button" data-close>Cerrar</button></div><div class="modal-body"><p class="help" style="margin-top:0">Cada dimensión necesita un nombre y qué significan el 1 y el 5. Las nuevas no tienen perspectiva teórica asociada. Más dimensiones = llamadas más largas y caras.</p><div id="dimsEdit"></div><p class="aviso" id="dimsErr" role="alert" style="display:none"></p><div class="actions"><button class="btn btn-ghost btn-sm" id="btnDimAdd" type="button"><svg class="i"><use href="#i-plus"/></svg>Añadir dimensión</button><button class="btn btn-ghost btn-sm" id="btnDimsBase" type="button">Restablecer las 15 originales</button><button class="btn btn-primary" id="btnDimsOk" type="button">Aplicar</button></div></div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>const APP="internacionalia";const APP_NAME="InternacionalIA";const LOGO_ICON="globe";
+"use strict";
+/* ── utilidades comunes (todas las apps Forja) ──────────────────────────────
+   Requiere que la app defina antes:  const APP = 'miapp';  (prefijo de almacenamiento)  */
+const $ = id => document.getElementById(id), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ico = n => `<svg class="i"><use href="#i-${n}"/></svg>`;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const uid = (p = '') => p + Math.random().toString(36).slice(2, 8);
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+const wc = s => (String(s || '').trim().match(/[\p{L}\p{N}]+/gu) || []).length;
+const chunk = (a, n) => { const o = []; for (let i = 0; i < a.length; i += n) o.push(a.slice(i, i + n)); return o; };
+const nf = n => Math.round(n).toLocaleString('es-ES');
+const mmss = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
+const slug = s => norm(s).replace(/ /g, '_').slice(0, 40) || 'x';
+function toast(m, ms = 4200) { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), ms); }
+function dl(nombre, contenido, tipo) { const b = contenido instanceof Blob ? contenido : new Blob([contenido], {type: tipo}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = nombre; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 2500); }
+
+/* librerías externas: solo desde cdnjs (la CSP no admite otros orígenes) */
+const LIB = {
+  mammoth: 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js',
+  jszip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+  pdf: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  pdfw: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+  docx: 'https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js'
+};
+function cargaLib(urls) {
+  return urls.reduce((p, u) => p.catch(() => new Promise((ok, ko) => { const s = document.createElement('script'); s.src = u; s.onload = ok; s.onerror = () => { s.remove(); ko(); }; document.head.appendChild(s); })), Promise.reject())
+    .catch(() => { throw new Error('No se pudo cargar una librería: ¿hay conexión?'); });
+}
+
+/* huella SHA-256 (con alternativa para file:// sin contexto seguro) y canonización estable */
+const canon = v => v === null || typeof v !== 'object' ? JSON.stringify(v) : Array.isArray(v) ? '[' + v.map(canon).join(',') + ']' : '{' + Object.keys(v).filter(k => v[k] !== undefined).sort().map(k => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}';
+function sha256js(bytes) {
+  const pr = []; for (let n = 2; pr.length < 64; n++) if (pr.every(p => n % p)) pr.push(n);
+  const fr = x => Math.floor((x - Math.floor(x)) * 4294967296), K = pr.map(p => fr(Math.cbrt(p))), H = pr.slice(0, 8).map(p => fr(Math.sqrt(p)));
+  const l = bytes.length, pad = new Uint8Array(((l + 9 + 63) >> 6) << 6); pad.set(bytes); pad[l] = 0x80;
+  const dv = new DataView(pad.buffer); dv.setUint32(pad.length - 8, Math.floor(l * 8 / 4294967296)); dv.setUint32(pad.length - 4, (l * 8) >>> 0);
+  const rr = (x, n) => (x >>> n) | (x << (32 - n)), W = new Uint32Array(64);
+  for (let i = 0; i < pad.length; i += 64) {
+    for (let t = 0; t < 16; t++) W[t] = dv.getUint32(i + t * 4);
+    for (let t = 16; t < 64; t++) { const s0 = rr(W[t - 15], 7) ^ rr(W[t - 15], 18) ^ (W[t - 15] >>> 3), s1 = rr(W[t - 2], 17) ^ rr(W[t - 2], 19) ^ (W[t - 2] >>> 10); W[t] = (W[t - 16] + s0 + W[t - 7] + s1) >>> 0; }
+    let [a, b, c, d, e, f, g, hh] = H;
+    for (let t = 0; t < 64; t++) { const S1 = rr(e, 6) ^ rr(e, 11) ^ rr(e, 25), ch = (e & f) ^ (~e & g), t1 = (hh + S1 + ch + K[t] + W[t]) >>> 0, S0 = rr(a, 2) ^ rr(a, 13) ^ rr(a, 22), mj = (a & b) ^ (a & c) ^ (b & c), t2 = (S0 + mj) >>> 0; hh = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = b; b = a; a = (t1 + t2) >>> 0; }
+    [a, b, c, d, e, f, g, hh].forEach((v, j) => H[j] = (H[j] + v) >>> 0);
+  }
+  return H.map(v => v.toString(16).padStart(8, '0')).join('');
+}
+async function sha256(str) {
+  const b = new TextEncoder().encode(str);
+  if (window.crypto?.subtle) { try { return [...new Uint8Array(await crypto.subtle.digest('SHA-256', b))].map(x => x.toString(16).padStart(2, '0')).join(''); } catch {} }
+  return sha256js(b);
+}
+
+/* ── persistencia local (IndexedDB). La app define:  let S = {...};  y opcionalmente  const KEYP = () => 'main';  ── */
+const dbP = new Promise((ok, ko) => { const r = indexedDB.open(APP, 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); });
+const kv = async (mode, fn) => { const d = await dbP; return new Promise((ok, ko) => { const tx = d.transaction('kv', mode), q = fn(tx.objectStore('kv')); tx.oncomplete = () => ok(q && q.result); tx.onerror = () => ko(tx.error); }); };
+const _key = () => (typeof KEYP === 'function' ? KEYP() : 'main');
+let _g;
+function guarda() { clearTimeout(_g); _g = setTimeout(() => kv('readwrite', s => s.put(S, _key())).catch(() => toast('No se pudo guardar en el navegador (¿demasiado material?)')), 500); }
+/* guardado inmediato: úsalo justo después de pagar una llamada a la IA, para no perder el resultado si se cierra la pestaña */
+const guardaYa = () => { clearTimeout(_g); return kv('readwrite', s => s.put(S, _key())).catch(() => toast('No se pudo guardar en el navegador')); };
+window.addEventListener('pagehide', () => { clearTimeout(_g); try { kv('readwrite', s => s.put(S, _key())); } catch {} });
+async function cargaEstado(key = _key()) { try { const p = await kv('readonly', s => s.get(key)); return p || null; } catch { return null; } }
+
+/* ── proveedores de IA con la clave de cada persona: OpenAI, Google Gemini, Anthropic Claude ──────────────
+   Mensajes: [{role:'system'|'user'|'assistant', content: string | [{t:'text',v}, {t:'img',mime,data:'data:...'}]}]
+   Uso:   const texto = await llm(msgs, {max: 2800});      const obj = await llmJSON(msgs, {max: 3500});
+   Las claves viven solo en localStorage de este navegador. La clave de OpenAI es compartida por todo el catálogo ('ia_openai_key'). */
+const PROV = {
+  openai: {n: 'OpenAI', m: 'gpt-6-luna', k: 'ia_openai_key'},
+  gemini: {n: 'Google Gemini', m: 'gemini-2.5-flash', k: APP + '_key_gemini'},
+  anthropic: {n: 'Anthropic Claude', m: 'claude-haiku-4-5-20251001', k: APP + '_key_anthropic'}
+};
+const getProv = () => PROV[localStorage.getItem(APP + '_prov')] ? localStorage.getItem(APP + '_prov') : 'openai';
+const getKey = (p = getProv()) => localStorage.getItem(PROV[p].k) || '';
+const getMod = (p = getProv()) => localStorage.getItem(APP + '_model_' + p) || PROV[p].m;
+const parseJ = tx => { tx = String(tx || '').trim().replace(/^```(?:json)?|```$/g, '').trim(); try { return JSON.parse(tx); } catch { const m = tx.match(/\{[\s\S]*\}/); if (m) try { return JSON.parse(m[0]); } catch {} } return null; };
+const partes = c => typeof c === 'string' ? [{t: 'text', v: c}] : c;
+function agrupa(msgs, rolA) { const o = []; for (const m of msgs.filter(m => m.role !== 'system')) { const r = m.role === 'assistant' ? rolA : 'user'; if (o.length && o.at(-1).role === r) o.at(-1).parts.push({t: 'text', v: '\n\n'}, ...partes(m.content)); else o.push({role: r, parts: [...partes(m.content)]}); } if (o.length && o[0].role !== 'user') o.unshift({role: 'user', parts: [{t: 'text', v: '.'}]}); return o; }
+const sysDe = msgs => msgs.filter(m => m.role === 'system').map(m => typeof m.content === 'string' ? m.content : m.content.map(p => p.v || '').join('')).join('\n\n');
+function httpErr(st, tx, pv, mod) {
+  if (st === 401 || st === 403 || (pv === 'gemini' && st === 400 && /API key|API_KEY/i.test(tx))) return new Error(`${PROV[pv].n} no reconoce tu clave. Revísala en el botón «IA».`);
+  if (st === 404 || /model_not_found|not found|does not exist/i.test(tx)) return new Error(`Tu clave no tiene acceso al modelo «${mod}». Elige otro en el botón «IA».`);
+  if (st === 429 && /quota|billing|credit|RESOURCE_EXHAUSTED/i.test(tx)) return new Error(`Tu cuenta de ${PROV[pv].n} no tiene saldo o ha alcanzado su límite.`);
+  if (st === 400 && /image|vision|multimodal|modalit/i.test(tx)) return new Error(`El modelo «${mod}» no admite imágenes. Elige uno con visión.`);
+  return new Error(`${PROV[pv].n} ${st}: ${String(tx).slice(0, 180)}`);
+}
+async function conReintentos(fn, pv) {
+  for (let k = 0; k < 5; k++) {
+    let r; try { r = await fn(); } catch { if (k >= 2) throw new Error(`No hay conexión con ${PROV[pv].n}.`); await sleep(1500); continue; }
+    if (r.ok) return r;
+    if (r.status === 429 || r.status >= 500) { const tx = await r.clone().text(); if (r.status === 429 && /quota|billing|credit/i.test(tx)) return r; await sleep(2 ** (k + 1) * 1000); continue; }
+    return r;
+  }
+  throw new Error(`${PROV[pv].n} no responde ahora mismo. Inténtalo de nuevo en un momento.`);
+}
+async function llm(msgs, {json = false, max = 2800} = {}) {
+  const pv = getProv(), key = getKey(pv), mod = getMod(pv);
+  if (!key) throw new Error('Falta tu clave de IA. Pulsa el botón «IA», arriba.');
+  if (pv === 'openai') {
+    /* los modelos nuevos rechazan max_tokens/temperature: se prueban variantes según el error */
+    const razona = /^(gpt-[56]|o\d)/.test(mod), o = {json, reasoning: razona, comp: razona, temp: !razona};
+    const mm = msgs.map(m => ({role: m.role, content: typeof m.content === 'string' ? m.content : m.content.map(p => p.t === 'text' ? {type: 'text', text: p.v} : {type: 'image_url', image_url: {url: p.data}})}));
+    for (let k = 0; k < 6; k++) {
+      const body = {model: mod, messages: mm};
+      if (o.json) body.response_format = {type: 'json_object'};
+      if (o.comp) body.max_completion_tokens = max * (o.reasoning ? 2 : 1); else body.max_tokens = max;
+      if (o.reasoning) body.reasoning_effort = 'low';
+      if (o.temp) body.temperature = 0.4;
+      const r = await conReintentos(() => fetch('https://api.openai.com/v1/chat/completions', {method: 'POST', headers: {'Content-Type': 'application/json', Authorization: 'Bearer ' + key}, body: JSON.stringify(body)}), pv);
+      if (r.ok) return (await r.json()).choices?.[0]?.message?.content || '';
+      const tx = await r.text();
+      if (r.status === 400) {
+        if (/reasoning_effort/i.test(tx) && o.reasoning) { o.reasoning = false; continue; }
+        if (/max_completion_tokens/i.test(tx) && o.comp) { o.comp = false; continue; }
+        if (/max_tokens/i.test(tx) && !o.comp) { o.comp = true; continue; }
+        if (/temperature/i.test(tx) && o.temp) { o.temp = false; continue; }
+        if (/response_format|json/i.test(tx) && o.json) { o.json = false; const u = mm.at(-1); if (typeof u.content === 'string') u.content += '\nResponde SOLO con JSON válido.'; else u.content.push({type: 'text', text: 'Responde SOLO con JSON válido.'}); continue; }
+      }
+      throw httpErr(r.status, tx, pv, mod);
+    }
+    throw new Error('OpenAI no responde ahora mismo.');
+  }
+  if (pv === 'gemini') {
+    const sys = sysDe(msgs), cont = agrupa(msgs, 'model').map(m => ({role: m.role, parts: m.parts.map(p => p.t === 'text' ? {text: p.v} : {inline_data: {mime_type: p.mime, data: p.data.split(',')[1]}})}));
+    const body = {contents: cont, generationConfig: {maxOutputTokens: max, temperature: 0.4}};
+    if (sys) body.systemInstruction = {parts: [{text: sys}]};
+    if (json) body.generationConfig.responseMimeType = 'application/json';
+    const r = await conReintentos(() => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(mod)}:generateContent`, {method: 'POST', headers: {'Content-Type': 'application/json', 'x-goog-api-key': key}, body: JSON.stringify(body)}), pv);
+    const tx = await r.text(); if (!r.ok) throw httpErr(r.status, tx, pv, mod);
+    const j = JSON.parse(tx), txt = (j.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
+    if (!txt && j.promptFeedback?.blockReason) throw new Error(`El proveedor ha bloqueado la respuesta (${j.promptFeedback.blockReason}).`);
+    return txt;
+  }
+  const sys = sysDe(msgs), mm = agrupa(msgs, 'assistant').map(m => ({role: m.role, content: m.parts.map(p => p.t === 'text' ? {type: 'text', text: p.v} : {type: 'image', source: {type: 'base64', media_type: p.mime, data: p.data.split(',')[1]}})}));
+  if (json) mm.at(-1).content.push({type: 'text', text: '\n\nResponde SOLO con un objeto JSON válido, sin texto alrededor.'});
+  const r = await conReintentos(() => fetch('https://api.anthropic.com/v1/messages', {method: 'POST', headers: {'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'}, body: JSON.stringify({model: mod, max_tokens: max, system: sys, messages: mm})}), pv);
+  const tx = await r.text(); if (!r.ok) throw httpErr(r.status, tx, pv, mod);
+  return (JSON.parse(tx).content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+}
+async function llmJSON(msgs, o = {}) { for (let k = 0; k < 2; k++) { const j = parseJ(await llm(msgs, {...o, json: true})); if (j && typeof j === 'object') return j; } throw new Error('La IA no devolvió una respuesta con el formato esperado. Inténtalo de nuevo.'); }
+async function listaModelos(pv = getProv()) {
+  const key = getKey(pv); if (!key) throw new Error('Primero pega tu clave.'); let r;
+  try {
+    if (pv === 'openai') r = await fetch('https://api.openai.com/v1/models', {headers: {Authorization: 'Bearer ' + key}});
+    else if (pv === 'gemini') r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=100', {headers: {'x-goog-api-key': key}});
+    else r = await fetch('https://api.anthropic.com/v1/models?limit=100', {headers: {'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'}});
+  } catch { throw new Error(`No hay conexión con ${PROV[pv].n}.`); }
+  const tx = await r.text(); if (!r.ok) throw httpErr(r.status, tx, pv, ''); const j = JSON.parse(tx);
+  if (pv === 'openai') return (j.data || []).map(m => m.id).filter(id => /^(gpt-|o\d|chatgpt-)/.test(id) && !/(audio|realtime|transcribe|tts|image|embedding|moderation|search|instruct|whisper|dall|davinci|babbage|codex|computer-use)/i.test(id)).sort();
+  if (pv === 'gemini') return (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent')).map(m => m.name.replace(/^models\//, '')).sort();
+  return (j.data || []).map(m => m.id).sort();
+}
+
+/* ── verificación por código de lo que dice la IA, anonimización y Markdown seguro ──────────────────────────
+   Principio: la IA propone, el código comprueba. Nunca muestres como hecho una cita, una cifra o un recuento
+   que la IA afirme sin haberlo contrastado con el texto de origen. */
+
+/* texto normalizado con mapa a las posiciones originales */
+function normMap(s) {
+  let n = ''; const map = []; let sp = true;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (/[\p{L}\p{N}]/u.test(c)) { for (const ch of c) { n += ch; map.push(i); } sp = false; }
+    else if (!sp) { n += ' '; map.push(i); sp = true; }
+  }
+  return {n, map};
+}
+let _nm = null;
+const nmat = mat => { if (!_nm || _nm.src !== mat) _nm = {src: mat, ...normMap(mat)}; return _nm; };
+/* ¿aparece la cita (literal, ignorando mayúsculas, tildes y puntuación) en el material? */
+function localiza(mat, cita, minLen = 12) { const q = norm(cita); if (q.length < minLen) return null; const m = nmat(mat), i = m.n.indexOf(q); return i < 0 ? null : [m.map[i], m.map[Math.min(i + q.length - 1, m.map.length - 1)]]; }
+const esFiel = (mat, cita) => !!localiza(mat, cita);
+/* extractos del material alrededor de las citas (para dar contexto sin enviar todo) */
+function ventanas(mat, citas, rad = 700, tope = 4200) {
+  const r = citas.map(c => localiza(mat, c)).filter(Boolean).map(([a, b]) => [Math.max(0, a - rad), Math.min(mat.length, b + rad)]).sort((x, y) => x[0] - y[0]), m = [];
+  for (const v of r) { const l = m.at(-1); if (l && v[0] <= l[1]) l[1] = Math.max(l[1], v[1]); else m.push([...v]); }
+  const t = m.map(([a, b]) => mat.slice(a, b).trim()).join('\n[…]\n'); return t.length > tope ? t.slice(0, tope) : t;
+}
+/* cifras que la IA menciona y no están en el material (ignora números pequeños) */
+const numsDe = t => new Set((String(t).match(/\d+(?:[.,]\d+)?/g) || []).map(x => x.replace(',', '.')));
+function numerosNuevos(texto, mat) { const m = numsDe(mat); return [...numsDe(texto)].filter(x => !m.has(x) && parseFloat(x) > 12); }
+
+/* datos personales: se enmascaran antes de enviar nada a un proveedor externo */
+const PII = [['CORREO', /[\w.+-]+@[\w-]+\.[\w.-]+/g], ['ID', /\b\d{8}[A-HJ-NP-TV-Z]\b|\b[XYZ]\d{7}[A-Z]\b/gi], ['TELÉFONO', /(?:\+\d{2}\s?)?\b[6-9]\d{2}[\s.-]?\d{3}[\s.-]?\d{3}\b/g]];
+function scrub(txt, nombre = '') {
+  let n = 0, t = String(txt ?? ''); PII.forEach(([tag, rx]) => { t = t.replace(rx, () => { n++; return `[${tag}]`; }); });
+  const nm = new Set(norm(nombre).split(' ').filter(w => w.length >= 3));
+  t = t.replace(/[\p{L}][\p{L}'’-]*/gu, w => nm.has(norm(w)) ? (n++, '[PERSONA]') : w);
+  return {t, n};
+}
+const cuentaPII = txt => PII.reduce((n, [, rx]) => n + ((String(txt).match(rx) || []).length), 0);
+
+/* Markdown mínimo y seguro (escapa antes de formatear) */
+function md(s) {
+  const inl = x => esc(x).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/(^|[\s(])\*([^*\n]+)\*/g, '$1<i>$2</i>').replace(/`([^`]+)`/g, '<code>$1</code>');
+  const out = []; let lst = null; const cierra = () => { if (lst) { out.push(`</${lst}>`); lst = null; } };
+  for (const raw of String(s || '').split('\n')) {
+    const l = raw.trimEnd(); let m; if (!l.trim()) { cierra(); continue; }
+    if (m = l.match(/^#{1,4}\s+(.*)/)) { cierra(); out.push(`<h4>${inl(m[1])}</h4>`); continue; }
+    if (m = l.match(/^\s*[-*•]\s+(.*)/)) { if (lst !== 'ul') { cierra(); out.push('<ul>'); lst = 'ul'; } out.push(`<li>${inl(m[1])}</li>`); continue; }
+    if (m = l.match(/^\s*\d+[.)]\s+(.*)/)) { if (lst !== 'ol') { cierra(); out.push('<ol>'); lst = 'ol'; } out.push(`<li>${inl(m[1])}</li>`); continue; }
+    cierra(); out.push(`<p>${inl(l)}</p>`);
+  }
+  cierra(); return out.join('');
+}
+
+/* ── navegación Forja: barra superior, stepper, barra inferior, ventanas, ayuda y ajustes de IA ─────────────
+   La app define (en app.js; se leen al ejecutar, no al cargar el módulo) y llama a iniciaUI() al arrancar:
+     const STEPS  = ['Inicio', 'Paso 1', ...];                   // etiquetas del stepper (la actual se muestra con nombre)
+     const NAV    = [['Empezar',''], ['Siguiente: …','pista'], …]; // [texto del botón «siguiente», pista de la barra inferior] por pantalla
+     const RENDER = {0: pintaInicio, 1: pintaX, …};               // funciones que pintan cada pantalla al entrar
+     const GLOS   = [['Título','Texto'], …];                       // ayuda
+   Opcionales:  const CAN_NEXT = i => true|'mensaje';  // validación antes de avanzar
+                const HUBS = ['Glosario', 'Progreso'];  // secciones fuera del recorrido lineal: pantallas con data-step = STEPS.length + k.
+                // Al entrar en una sección el stepper muestra solo su nombre, la barra de progreso se vacía y «Atrás»/«Siguiente» vuelven al inicio. */
+let step = 0;
+const esHub = i => i >= STEPS.length;
+function buildStepper() {
+  if (esHub(step)) {
+    const nombre = (typeof HUBS !== 'undefined' && HUBS[step - STEPS.length]) || '';
+    $('stepper').innerHTML = `<button class="sdot" type="button" data-go="0" data-state="done"><span class="n">${ico('left')}</span><span class="lbl">Inicio</span></button><span class="sline on"></span><button class="sdot" type="button" data-state="now" aria-current="page"><span class="n">${ico(typeof LOGO_ICON === 'string' ? LOGO_ICON : 'bulb')}</span><span class="lbl">${esc(nombre)}</span></button>`;
+    $$('#stepper [data-go]').forEach(b => b.onclick = () => go(+b.dataset.go)); return;
+  }
+  $('stepper').innerHTML = STEPS.map((s, i) => `${i ? `<span class="sline${i <= step ? ' on' : ''}"></span>` : ''}<button class="sdot" type="button" data-go="${i}" data-state="${i < step ? 'done' : i === step ? 'now' : ''}" ${i === step ? 'aria-current="step"' : ''}><span class="n">${i < step ? ico('check') : i === 0 ? ico(typeof LOGO_ICON === 'string' ? LOGO_ICON : 'bulb') : i}</span><span class="lbl">${esc(s)}</span></button>`).join('');
+  $$('#stepper [data-go]').forEach(b => b.onclick = () => go(+b.dataset.go));
+}
+function updateNav() { const N = NAV[step] || ['Volver al inicio', '']; $('navBack').classList.toggle('hidden', step === 0 || esHub(step)); $('navNextTxt').textContent = N[0]; $('navHint').textContent = N[1] || ''; }
+function go(i) {
+  step = i; $$('.screen').forEach(s => s.classList.toggle('on', +s.dataset.step === i)); $('progBar').style.width = esHub(i) ? '0%' : (i / (STEPS.length - 1) * 100) + '%';
+  (RENDER[i] || (() => {}))(); buildStepper(); updateNav(); window.scrollTo({top: 0, behavior: 'instant'});
+}
+$('goHome').onclick = () => go(0);
+$('navBack').onclick = () => { if (step > 0) go(step - 1); };
+$('navNext').onclick = () => { if (esHub(step)) return go(0); const ok = typeof CAN_NEXT === 'function' ? CAN_NEXT(step) : true; if (ok !== true && ok) return toast(ok); go(step === STEPS.length - 1 ? 0 : step + 1); };
+
+/* ventanas modales (Escape y clic fuera cierran; data-close en el botón) */
+const _cierres = {};   // id de modal → función a ejecutar al cerrar
+$$('.modal').forEach(m => m.addEventListener('click', ev => { if (ev.target === m || ev.target.hasAttribute('data-close')) { m.classList.remove('on'); _cierres[m.id]?.(); } }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $$('.modal.on').forEach(m => { m.classList.remove('on'); _cierres[m.id]?.(); }); });
+function cargaIA() { const pv = getProv(); $('selProv').value = pv; $('apiKey').value = getKey(pv); $('apiKey').placeholder = KPH[pv]; $('modelo').value = getMod(pv); let ml = []; try { ml = JSON.parse(localStorage.getItem(APP + '_models_' + pv) || '[]'); } catch {} $('modelos').innerHTML = [...new Set([PROV[pv].m, ...ml])].map(m => `<option value="${esc(m)}">`).join(''); }
+const KPH = {openai: 'sk-proj-…', gemini: 'AIza…', anthropic: 'sk-ant-…'};
+/* iniciaUI(): llámala UNA vez desde app.js, al final, justo antes de go(0). Enlaza la ayuda y los ajustes de IA.
+   (No se hace al cargar el módulo porque GLOS y el resto de constantes de la app aún no existen en ese momento.) */
+function iniciaUI() {
+  if ($('btnHelp')) { $('glos').innerHTML = (typeof GLOS !== 'undefined' ? GLOS : []).map(g => `<div><b>${esc(g[0])}</b><span>${esc(g[1])}</span></div>`).join(''); $('btnHelp').onclick = () => $('mHelp').classList.add('on'); }
+  if ($('btnIA')) {
+    $('btnIA').onclick = () => { cargaIA(); $('mIA').classList.add('on'); };
+    $('selProv').onchange = () => { localStorage.setItem(APP + '_prov', $('selProv').value); cargaIA(); };
+    $('apiKey').oninput = () => localStorage.setItem(PROV[getProv()].k, $('apiKey').value.trim());
+    $('modelo').oninput = () => localStorage.setItem(APP + '_model_' + getProv(), $('modelo').value.trim() || PROV[getProv()].m);
+    $('btnEye').onclick = () => { const k = $('apiKey'); k.type = k.type === 'password' ? 'text' : 'password'; };
+    $('btnModelos').onclick = async () => { const st = $('iaEstado'), pv = getProv(); st.textContent = '…'; try { const l = await listaModelos(pv); localStorage.setItem(APP + '_models_' + pv, JSON.stringify(l)); $('modelos').innerHTML = l.map(m => `<option value="${esc(m)}">`).join(''); st.textContent = `${l.length} modelos disponibles en tu clave; escribe o elige uno.`; } catch (e) { st.textContent = e.message; } };
+  }
+}
+/* ¿hay clave? si no, abre los ajustes de IA y avisa */
+function pideClave() { if (getKey()) return true; if ($('mIA')) { cargaIA(); $('mIA').classList.add('on'); } toast('Pega tu clave de IA para continuar'); return false; }
+
+/* ── salidas: Word desde Markdown y ZIP. Se cargan docx y JSZip desde cdnjs solo cuando hacen falta ────────── */
+/* wordDeMarkdown(md, {titulo, subtitulo, pie, kicker}) → Blob .docx
+   Convierte ## encabezados, listas y **negritas**; lo demás va como párrafos. */
+async function wordDeMarkdown(md, {titulo = '', subtitulo = '', pie = '', kicker = ''} = {}) {
+  await cargaLib([LIB.docx]); const X = window.docx;
+  const runs = (tx, base = {}) => String(tx).split(/(\*\*[^*]+\*\*)/).filter(Boolean).map(p => p.startsWith('**') ? new X.TextRun({text: p.slice(2, -2), font: 'Arial', size: 22, bold: true, ...base}) : new X.TextRun({text: p, font: 'Arial', size: 22, ...base}));
+  const P = (tx, o = {}) => new X.Paragraph({heading: o.h, alignment: o.c ? X.AlignmentType.CENTER : undefined, spacing: {after: o.after ?? 110}, indent: o.ind ? {left: o.ind} : undefined, children: o.plain ? [new X.TextRun({text: String(tx), font: 'Arial', size: o.s || 22, bold: o.b, italics: o.i, color: o.col})] : runs(tx, {italics: o.i, color: o.col})});
+  const k = [];
+  if (kicker) k.push(P(kicker.toUpperCase(), {c: true, b: true, col: 'E4572E', s: 20, plain: true}));
+  if (titulo) k.push(P(titulo, {c: true, b: true, s: 32, plain: true}));
+  if (subtitulo) k.push(P(subtitulo, {c: true, col: '5D7691', s: 20, after: 260, plain: true}));
+  for (const l of String(md).split('\n')) {
+    const t = l.trimEnd(); if (!t.trim()) continue; let m;
+    if (m = t.match(/^#{1,4}\s+(.*)/)) k.push(P(m[1].replace(/\*\*/g, ''), {h: X.HeadingLevel.HEADING_1, plain: true}));
+    else if (m = t.match(/^\s*[-*•]\s+(.*)/)) k.push(P('•  ' + m[1], {ind: 360, after: 60}));
+    else if (m = t.match(/^\s*(\d+[.)])\s+(.*)/)) k.push(P(m[1] + '  ' + m[2], {ind: 360, after: 60}));
+    else k.push(P(t));
+  }
+  if (pie) k.push(P(pie, {i: true, s: 16, col: '8899AA', plain: true}));
+  return X.Packer.toBlob(new X.Document({creator: typeof APP_NAME === 'string' ? APP_NAME : APP, sections: [{children: k}]}));
+}
+/* zipDe({'nombre.ext': Blob|string, …}) → Blob .zip */
+async function zipDe(ficheros) { await cargaLib([LIB.jszip]); const z = new JSZip(); for (const [n, c] of Object.entries(ficheros)) z.file(n, c); return z.generateAsync({type: 'blob', compression: 'DEFLATE'}); }
+/* csv con BOM, separador «;» (Excel en español) y comillas escapadas */
+const csvq = v => { const s = String(v ?? ''); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+const csvDe = (cab, filas) => '\ufeff' + [cab, ...filas].map(f => f.map(csvq).join(';')).join('\r\n');
+
+/* ══ Datos fijos: dimensiones, perspectivas teóricas y ejemplos (ficticios, sin IA) ══ */
+const APP_VERSION = '1.0.0';
+const BLOQUES = {'Recursos y trayectoria': '#1F6FB2', 'Equipo directivo': '#6B4FD8', 'Conocimiento y redes': '#0E8C7A', 'Capacidades': '#C98200', 'Producto y mercado': '#E4572E', 'Otras': '#5D7691'};
+const DIMS_BASE = [
+  ['tamano', 'Recursos y trayectoria', 'Tamaño y recursos disponibles', 'muy pequeña', 'grande'],
+  ['financieros', 'Recursos y trayectoria', 'Recursos financieros', 'muy limitados', 'abundantes'],
+  ['exp_empresa', 'Recursos y trayectoria', 'Experiencia internacional de la empresa', 'ninguna', 'amplia'],
+  ['exp_directivos', 'Equipo directivo', 'Experiencia internacional del equipo directivo', 'ninguna', 'amplia'],
+  ['orient_emprend', 'Equipo directivo', 'Orientación emprendedora', 'conservadora', 'muy emprendedora'],
+  ['vision_global', 'Equipo directivo', 'Visión global desde el inicio', 'local', 'global desde el origen'],
+  ['conoc_mercados', 'Conocimiento y redes', 'Conocimiento de mercados exteriores', 'escaso', 'profundo'],
+  ['redes', 'Conocimiento y redes', 'Redes y contactos internacionales', 'inexistentes', 'muy densas'],
+  ['innovacion', 'Capacidades', 'Capacidad de innovación', 'baja', 'muy alta'],
+  ['cap_digitales', 'Capacidades', 'Capacidades digitales', 'bajas', 'muy altas'],
+  ['tec_digitales', 'Capacidades', 'Uso de tecnologías digitales para vender', 'nulo', 'intensivo'],
+  ['escalabilidad', 'Producto y mercado', 'Escalabilidad / estandarización del producto', 'muy local', 'universal'],
+  ['nicho', 'Producto y mercado', 'Especialización en un nicho global', 'generalista', 'nicho global'],
+  ['mercado_dom', 'Producto y mercado', 'Limitación del mercado doméstico', 'amplio', 'muy limitado'],
+  ['proximidad', 'Producto y mercado', 'Proximidad de los mercados objetivo', 'muy lejanos', 'muy próximos']
+].map(([id, bloque, nombre, lo, hi]) => ({id, bloque, nombre, lo, hi}));
+const POT = ['bajo', 'medio-bajo', 'medio', 'medio-alto', 'alto'];
+const ESC = ['acelerado', 'mixto', 'secuencial'];
+const PERSP_CLAVES = ['uppsala', 'new venture', 'born global', 'redes', 'recursos', 'capacidades', 'emprendimiento', 'digitaliz'];
+const PERSP_TXT = ['Modelo de Uppsala', 'International New Ventures / born globals', 'Enfoque de redes', 'Recursos y capacidades', 'Emprendimiento internacional', 'Digitalización e internacionalización'];
+const EMPRESA_VACIA = {nombre: '', sector: '', origen: '', mercados: '', producto: '', situacion: '', otros: ''};
+
+const EJ_EMPRESA = {nombre: 'CloudLab Analytics', sector: 'Software B2B (analítica de datos para laboratorios)', origen: 'España (Valencia), fundada en 2022', mercados: 'UE, Reino Unido, EE. UU.',
+  producto: 'Plataforma SaaS en inglés y español, suscripción mensual, implantación remota en dos semanas.',
+  situacion: 'El 55 % de la facturación procede del exterior (Alemania, Países Bajos, Reino Unido). Venta online y en ferias sectoriales.',
+  otros: 'Ha participado en una aceleradora europea; financiación semilla de 600 k€.'};
+const EJ_VALORES = {tamano: 2, financieros: 2, exp_empresa: 2, exp_directivos: 5, orient_emprend: 5, vision_global: 5, conoc_mercados: 3, redes: 3, innovacion: 5, cap_digitales: 5, tec_digitales: 5, escalabilidad: 5, nicho: 4, mercado_dom: 3, proximidad: 3};
+const EJ_NOTAS = {exp_directivos: 'Los dos fundadores trabajaron 8 años en una multinacional en Londres', redes: 'Contactos procedentes de la aceleradora; pocos distribuidores'};
+
+/* Respuesta «de la IA» precalculada para el ejemplo (ficticia): atraviesa las mismas funciones de comprobación que una real */
+const EJ_DIAG_RAW = {
+  potencial: 'medio-alto', resumen: 'La empresa reúne varios rasgos propios de una internacionalización acelerada (equipo con experiencia, producto digital escalable, visión global), aunque su tamaño, sus recursos financieros y sus redes limitan la velocidad sostenible de expansión.',
+  escenario_mas_plausible: 'acelerado', confianza: 'media', motivo_confianza: 'Hay datos concretos sobre el producto y el equipo, pero faltan cifras de recursos, canales y distribución por mercados.',
+  favorables: [
+    {factor: 'Experiencia internacional del equipo fundador', dimension_id: 'exp_directivos', peso: 'alto', evidencia: 'Los dos fundadores trabajaron 8 años en una multinacional en Londres', razonamiento: 'El conocimiento experiencial que la teoría secuencial sitúa en la empresa llega aquí aportado por las personas fundadoras, lo que reduce la incertidumbre y permite entrar en varios mercados a la vez.', perspectiva: 'Emprendimiento internacional'},
+    {factor: 'Producto digital estandarizado', dimension_id: 'escalabilidad', peso: 'alto', evidencia: 'Plataforma SaaS en inglés y español, suscripción mensual, implantación remota en dos semanas.', razonamiento: 'Un servicio que se implanta en remoto y casi no requiere adaptación local reduce el compromiso de recursos por mercado y acorta el tiempo de entrada.', perspectiva: 'Digitalización e internacionalización'},
+    {factor: 'Visión global desde el origen', dimension_id: 'vision_global', peso: 'medio', evidencia: 'Visión global desde el inicio: 5/5', razonamiento: 'Las empresas con orientación internacional desde su fundación tienden a diseñar la organización y el producto para varios mercados, rasgo central de las born globals.', perspectiva: 'International New Ventures / born globals'},
+    {factor: 'Capacidades digitales y venta online', dimension_id: 'tec_digitales', peso: 'medio', evidencia: 'Uso de tecnologías digitales para vender: 5/5', razonamiento: 'Los canales digitales permiten alcanzar clientes lejanos sin red física, lo que sustituye parte del aprendizaje gradual por contacto directo.', perspectiva: 'Digitalización e internacionalización'}],
+  limitantes: [
+    {factor: 'Recursos financieros limitados', dimension_id: 'financieros', peso: 'alto', evidencia: 'Recursos financieros: 2/5', razonamiento: 'Sostener varias entradas simultáneas exige inversión comercial y de soporte; con financiación semilla limitada, la velocidad puede chocar con la caja.', perspectiva: 'Recursos y capacidades'},
+    {factor: 'Redes internacionales todavía poco densas', dimension_id: 'redes', peso: 'medio', evidencia: 'Contactos procedentes de la aceleradora; pocos distribuidores', razonamiento: 'Las relaciones dan acceso a clientes y a conocimiento de mercado; con pocos distribuidores, la expansión depende más de la venta directa.', perspectiva: 'Enfoque de redes'},
+    {factor: 'Experiencia internacional de la empresa aún corta', dimension_id: 'exp_empresa', peso: 'bajo', evidencia: 'Experiencia internacional de la empresa: 2/5', razonamiento: 'Aunque el equipo sí tiene experiencia, la organización como tal ha acumulado poco aprendizaje propio.', perspectiva: 'Modelo de Uppsala'}],
+  patrones: [{titulo: 'La experiencia directiva compensa la juventud de la empresa', dimensiones: ['exp_directivos', 'exp_empresa'], explicacion: 'El conocimiento experiencial está en las personas, no en la organización; si el equipo se marchara, la ventaja se debilitaría.'},
+    {titulo: 'Producto muy escalable, caja ajustada', dimensiones: ['escalabilidad', 'financieros'], explicacion: 'El producto permitiría crecer rápido con poco coste marginal, pero el cuello de botella es la inversión inicial en ventas y soporte.'}],
+  comparacion: {secuencial: {argumentos: ['Reduciría el riesgo financiero concentrando recursos en uno o dos mercados.', 'Daría tiempo a ampliar la red de distribuidores.'], recomendable_si: 'la financiación adicional no llega o la caja se tensa.'},
+    acelerado: {argumentos: ['El equipo y el producto lo permiten.', 'La parte de facturación exterior ya es elevada.'], recomendable_si: 'se consiguen recursos o socios locales que sostengan la entrada simultánea.'}, valoracion: 'El perfil encaja mejor con una vía acelerada selectiva (pocos mercados cercanos a la vez) que con una expansión masiva.'},
+  contribuciones: [
+    {id: 'tamano', efecto: -1, motivo: 'Poca capacidad para atender varios mercados'}, {id: 'financieros', efecto: -2, motivo: 'Caja ajustada frente al ritmo de entrada'}, {id: 'exp_empresa', efecto: -1, motivo: 'Poco aprendizaje organizativo propio'},
+    {id: 'exp_directivos', efecto: 2, motivo: 'Fundadores con experiencia en Londres'}, {id: 'orient_emprend', efecto: 1, motivo: 'Asunción de riesgo compatible con rapidez'}, {id: 'vision_global', efecto: 2, motivo: 'Diseñada para varios mercados desde el origen'},
+    {id: 'conoc_mercados', efecto: 0, motivo: 'Conocimiento intermedio, ni frena ni impulsa'}, {id: 'redes', efecto: -1, motivo: 'Pocos distribuidores propios'}, {id: 'innovacion', efecto: 1, motivo: 'Diferenciación que sostiene el interés exterior'},
+    {id: 'cap_digitales', efecto: 2, motivo: 'Implantación remota y soporte a distancia'}, {id: 'tec_digitales', efecto: 2, motivo: 'Canal digital hacia clientes lejanos'}, {id: 'escalabilidad', efecto: 2, motivo: 'Producto casi sin adaptación local'},
+    {id: 'nicho', efecto: 1, motivo: 'Nicho global concentra la demanda'}, {id: 'mercado_dom', efecto: 0, motivo: 'Mercado doméstico ni pequeño ni grande'}, {id: 'proximidad', efecto: 0, motivo: 'Proximidad media: sin sesgo claro'}],
+  preguntas: [{pregunta: '¿Cuánto tiempo de caja tiene la empresa con la financiación actual?', por_que: 'Si es menor de 12 meses, la limitación financiera pesaría más y el potencial bajaría.'},
+    {pregunta: '¿Qué parte de las ventas exteriores es venta directa y cuál pasa por distribuidores?', por_que: 'Cambiaría el peso de las redes internacionales en el diagnóstico.'}],
+  informacion_adicional: ['Margen por cliente y coste de captación en cada mercado.', 'Requisitos regulatorios de datos en EE. UU. y Reino Unido.'],
+  interpretacion: 'La empresa presenta varias características compatibles con una internacionalización acelerada. Las carencias en recursos y redes no impiden la aceleración, pero sugieren hacerla de forma selectiva y condicionada a obtener financiación o socios locales.'
+};
+const EJ_SIM_CAMBIOS = {redes: 5, financieros: 4};
+const EJ_SIM_RAW = {
+  potencial: 'alto', direccion: 'mejora', resumen: 'Con redes internacionales fuertes y más recursos financieros, desaparecen los dos principales cuellos de botella y el perfil se acerca al de una born global plenamente sostenible.',
+  efectos: [{cambio: 'Redes internacionales de 3 a 5', efecto: 'Pasan de limitante a impulsor', mecanismo: 'Los distribuidores y socios locales dan acceso a clientes y conocimiento de mercado sin construir presencia propia.', perspectiva: 'Enfoque de redes'},
+    {cambio: 'Recursos financieros de 2 a 4', efecto: 'Se atenúa el principal limitante', mecanismo: 'Permite sostener varias entradas simultáneas y absorber el coste de captación inicial.', perspectiva: 'Recursos y capacidades'}],
+  interacciones: 'Redes y recursos se refuerzan: con financiación se pueden activar mejor los contactos, y con contactos cada euro invertido rinde más.',
+  limitantes_que_persisten: ['Tamaño pequeño de la organización', 'Experiencia internacional de la empresa todavía corta'],
+  contribuciones: EJ_DIAG_RAW.contribuciones.map(c => c.id === 'redes' ? {id: 'redes', efecto: 2, motivo: 'Red densa que da acceso a mercados'} : c.id === 'financieros' ? {id: 'financieros', efecto: 1, motivo: 'Margen para sostener entradas simultáneas'} : c),
+  escenario_mas_plausible: 'acelerado', advertencia: 'Escenario hipotético: depende de que los cambios sean reales y sostenibles.'
+};
+
+/* Caso docente de ejemplo (ficticio) con su referencia */
+const EJ_CASO = {
+  id: 'ejemplo', titulo: 'Conservas Albufera: ¿crecer paso a paso o saltar al mercado europeo?',
+  narrativa: [
+    'Conservas Albufera es una empresa familiar valenciana con 38 empleados y una facturación de unos seis millones de euros. Fundada en 1987 para abastecer a los comercios de la comarca, solo el 3 % de sus ventas sale de España: a Portugal, a través de un único distribuidor. La tesorería va justa y el banco ha rechazado ampliar la línea de crédito mientras no mejore el circulante.',
+    'Hace tres años tomó las riendas la hija del fundador, Marta, que trabajó dos años en el departamento de compras de una cadena de supermercados holandesa. Marta lanzó una gama gourmet de verduras ecológicas en tarro y una pequeña tienda online. La junta familiar, sin embargo, aprueba cada gasto con cautela, y el consumo nacional de conservas lleva años cayendo cerca de un 4 % anual.',
+    'La gama gourmet utiliza un proceso de esterilización que la empresa patentó con una universidad. Las etiquetas ya salen en cuatro idiomas y el producto dura tres años en el estante, así que apenas necesita adaptarse. Aun así, la empresa conoce poco los canales de Alemania o Francia: solo visitó una feria en Colonia, donde conoció a un importador interesado. La tienda online la gestiona una agencia externa y supone el 20 % de las ventas; el equipo interno sabe de producción, pero poco de marketing digital.',
+    'Marta duda entre seguir con el distribuidor portugués y probar mercados cercanos uno por uno, o aprovechar el interés del importador alemán y lanzar de golpe la gama gourmet en tres países de la Unión Europea.'],
+  preguntas: ['¿Qué rasgos de Conservas Albufera recuerdan a una internacionalización secuencial?', '¿Qué rasgos favorecerían una entrada más rápida en varios mercados?', '¿Qué papel juegan Marta y su experiencia previa?', '¿Qué limitaciones de recursos o de conocimiento condicionan la decisión?', 'Si tuvieras que asesorar a Marta, ¿qué información adicional pedirías antes de decidir y por qué?'],
+  guia: {tipo_de_proceso: 'Ambiguo: la empresa tiene una trayectoria secuencial (solo Portugal, vía un distribuidor) pero una nueva gama con rasgos de born global.', factores_aceleradores: ['Gama gourmet estandarizada y multilingüe', 'Nicho de producto ecológico y gourmet', 'Presión de un mercado doméstico en declive', 'Directiva con experiencia internacional'], factores_limitantes: ['Tesorería ajustada y crédito limitado', 'Casi sin experiencia exportadora', 'Escaso conocimiento de los canales de Alemania y Francia', 'Capacidades digitales internas bajas', 'Junta familiar prudente'],
+    respuestas_orientativas: ['Entrada previa solo en un país próximo, mediante un único distribuidor y con aprendizaje gradual.', 'Producto estandarizado, patente propia, nicho ecológico, presión del mercado doméstico y el contacto alemán.', 'Aporta conocimiento internacional experiencial y orientación emprendedora, aunque la junta modera su margen de acción.', 'Tesorería, escasa experiencia exportadora, poco conocimiento de canales y dependencia de una agencia digital.', 'Condiciones del importador alemán, financiación disponible, márgenes por país y requisitos de etiquetado ecológico.']},
+  referencia: {potencial: 'medio', escenario: 'mixto', valores: {tamano: 2, financieros: 2, exp_empresa: 1, exp_directivos: 3, orient_emprend: 3, vision_global: 2, conoc_mercados: 2, redes: 3, innovacion: 4, cap_digitales: 3, tec_digitales: 3, escalabilidad: 4, nicho: 4, mercado_dom: 4, proximidad: 4},
+    efectos: {tamano: -1, financieros: -2, exp_empresa: -1, exp_directivos: 1, orient_emprend: 1, vision_global: -1, conoc_mercados: -1, redes: 1, innovacion: 1, cap_digitales: 0, tec_digitales: 1, escalabilidad: 1, nicho: 2, mercado_dom: 1, proximidad: 0},
+    motivos: {tamano: 'Poca capacidad para varios mercados a la vez', financieros: 'Tesorería ajustada y crédito rechazado', exp_empresa: 'Solo Portugal con un distribuidor', exp_directivos: 'Dos años en una cadena holandesa', orient_emprend: 'Lanza gama gourmet y tienda online, frenada por la junta', vision_global: 'Fundada para el mercado comarcal', conoc_mercados: 'Una sola feria en Colonia', redes: 'Un importador alemán interesado', innovacion: 'Proceso de esterilización patentado', cap_digitales: 'Equipo interno poco experto, agencia externa', tec_digitales: 'El 20 % de las ventas es online', escalabilidad: 'Etiquetas en cuatro idiomas y tres años de vida útil', nicho: 'Gourmet ecológico en tarro', mercado_dom: 'Consumo nacional cayendo cerca de un 4 % anual', proximidad: 'Mercados europeos próximos: favorecen ambas vías'}},
+  dims: DIMS_BASE, meta: {sector: 'Industria alimentaria', nivel: '1.º Grado (ejemplo)', asignatura: 'Fundamentos de Gestión de Empresas', tipo: 'ambiguo', modelo: 'ejemplo precalculado', fecha: '2026-01-01', ficticio: true}, avisos: []
+};
+
+/* ══ Núcleo: prompts, comprobaciones por código y comparaciones. Sin interfaz (se puede probar en Node). ══
+   Principio: la IA propone; el código comprueba datos citados, dimensiones sin información, coherencia y cifras. */
+const nivelTxt = v => v <= 2 ? 'bajo' : v === 3 ? 'medio' : 'alto';
+const clampEf = x => Math.max(-2, Math.min(2, Math.round(Number(x))));
+const idsDe = dims => dims.map(d => d.id);
+const nombreDe = (dims, id) => (dims.find(d => d.id === id) || {}).nombre || id;
+const signo = n => (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n);
+const media = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0;
+const desv = a => { if (a.length < 2) return 0; const m = media(a); return Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1)); };
+
+/* ── perfil de la empresa en texto (es lo que la IA ve y contra lo que el código comprueba) ── */
+function perfilTexto(E, dims, valores, notas, anonimo) {
+  const nm = (E.nombre || '').trim();
+  const an = t => { t = String(t || ''); if (anonimo && nm.length >= 3) t = t.replace(new RegExp(nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), 'la empresa'); return t; };
+  let s = `EMPRESA: ${anonimo || !nm ? 'la empresa analizada' : nm}\nSector: ${an(E.sector) || '—'}\nOrigen y antigüedad: ${an(E.origen) || '—'}\nMercados objetivo: ${an(E.mercados) || '—'}\nProducto/servicio: ${an(E.producto) || '—'}\nSituación internacional actual: ${an(E.situacion) || '—'}\n\nDIMENSIONES (escala 1–5; «SIN INFORMACIÓN» = el usuario no lo sabe):\n`;
+  for (const d of dims) {
+    const v = Number(valores[d.id]) || 0;
+    s += `- [${d.id}] ${d.nombre}: ${v ? `${v}/5 (${nivelTxt(v)}; 1=${d.lo}, 5=${d.hi})` : 'SIN INFORMACIÓN'}${notas[d.id] ? ' — detalle: ' + an(notas[d.id]) : ''}\n`;
+  }
+  return s + `\nOtros factores: ${an(E.otros) || '—'}`;
+}
+
+const SISTEMA = `Eres un asistente académico especializado en internacionalización de la empresa (área de Organización de Empresas). Ayudas a profesorado, investigadores y estudiantes a realizar un DIAGNÓSTICO EXPLORATORIO sobre si las características de una empresa favorecen una internacionalización ACELERADA o SECUENCIAL.
+
+Marco de referencia (cita solo estas perspectivas por su nombre; NO inventes referencias bibliográficas, autores concretos fuera de los citados, años ni datos):
+- Modelo de Uppsala (Johanson y Vahlne): proceso secuencial, conocimiento experiencial, compromiso incremental, distancia psíquica.
+- International New Ventures / born globals (Oviatt y McDougall; Knight y Cavusgil): internacionalización temprana y rápida.
+- Enfoque de redes (Johanson y Mattsson; Coviello y Munro): las relaciones dan acceso a mercados y conocimiento.
+- Recursos y capacidades / capacidades dinámicas.
+- Emprendimiento internacional: orientación emprendedora y experiencia del equipo fundador.
+- Digitalización e internacionalización: plataformas, comercio electrónico y escalabilidad.
+
+Reglas:
+1. Apóyate SOLO en la información facilitada. En «evidencia» de cada factor copia LITERALMENTE un fragmento del perfil (una línea de dimensión con su valor, por ejemplo «Redes y contactos internacionales: 3/5», o una frase del texto del usuario). No parafrasees la evidencia.
+2. Las dimensiones «SIN INFORMACIÓN» no se suponen: efecto 0 y formula preguntas sobre ellas. No las uses como factor favorable ni limitante.
+3. Haz visible el razonamiento: explica el mecanismo causal (por qué ese factor acelera o frena), no solo la etiqueta.
+4. Busca interacciones entre dimensiones (compensaciones, refuerzos, cuellos de botella).
+5. Lenguaje prudente y exploratorio («parece», «podría»); nunca presentes el resultado como predicción, recomendación definitiva ni validación empírica. No pongas notas ni puntuaciones.
+6. Escribe en español, con claridad y rigor académico. Responde SOLO con JSON válido.`;
+
+const listaDims = dims => dims.map(d => `${d.id} (${d.nombre})`).join('; ');
+function formatoDiag(dims) {
+  const ids = idsDe(dims).join(' | ');
+  return `Devuelve un JSON con esta estructura exacta:
+{
+ "potencial": "alto" | "medio-alto" | "medio" | "medio-bajo" | "bajo",
+ "resumen": "2-3 frases",
+ "escenario_mas_plausible": "acelerado" | "secuencial" | "mixto",
+ "confianza": "alta" | "media" | "baja",
+ "motivo_confianza": "",
+ "favorables": [{"factor":"","dimension_id":"uno de: ${ids} | otro","peso":"alto|medio|bajo","evidencia":"fragmento LITERAL del perfil","razonamiento":"mecanismo causal","perspectiva":"una de las perspectivas del marco"}],
+ "limitantes": [ igual estructura ],
+ "patrones": [{"titulo":"","dimensiones":["ids"],"explicacion":"interacción entre dimensiones"}],
+ "comparacion": {"secuencial":{"argumentos":[""],"recomendable_si":""},"acelerado":{"argumentos":[""],"recomendable_si":""},"valoracion":""},
+ "contribuciones": [{"id":"dimension_id","efecto":-2,"motivo":"máx. 12 palabras"}],
+ "preguntas": [{"pregunta":"","por_que":"qué cambiaría en el diagnóstico según la respuesta"}],
+ "informacion_adicional": [""],
+ "interpretacion": ""
+}
+En "contribuciones" incluye EXACTAMENTE estas ${dims.length} dimensiones, una vez cada una: ${listaDims(dims)}. El efecto va de -2 (frena mucho la aceleración) a +2 (la impulsa mucho) y es 0 si la dimensión está SIN INFORMACIÓN.
+Incluye de 3 a 6 factores favorables y de 2 a 6 limitantes (menos si el perfil tiene pocos datos).`;
+}
+const promptDiag = (perfil, dims) => perfil + '\n\n' + formatoDiag(dims);
+
+/* ── ¿está fundada la evidencia? Cita literal del perfil, o «nombre de la dimensión: N/5» con el N correcto ── */
+function fundada(ev, perfil, dim, valor) {
+  ev = String(ev || ''); if (norm(ev).length < 6) return false;
+  if (esFiel(perfil, ev)) return true;
+  if (dim && valor) { const m = ev.match(/(\d)\s*(?:\/|de)\s*5/); if (m && +m[1] === valor && norm(ev).includes(norm(dim.nombre))) return true; }
+  return false;
+}
+const perspOk = p => PERSP_CLAVES.some(k => norm(p).includes(k)) || /^otra/i.test(String(p || '').trim());
+const POR_UN_ID = (l, ids) => l.filter(x => ids.includes(String(x)));
+
+/* contribuciones: una por dimensión activa; sin información ⇒ 0; recorte a −2…+2. Devuelve también lo que dijo la IA sin corregir. */
+function procesaContrib(lista, dims, valores) {
+  const ids = idsDe(dims), crudo = {}, av = {dup: 0, desconocidas: 0, faltan: [], sinInfoCorregidas: [], recortadas: 0};
+  for (const c of (Array.isArray(lista) ? lista : [])) {
+    const id = String(c && c.id);
+    if (!ids.includes(id)) { av.desconocidas++; continue; }
+    if (id in crudo) { av.dup++; continue; }
+    crudo[id] = {efecto: Number(c.efecto), motivo: String(c.motivo || '').slice(0, 160)};
+  }
+  const out = dims.map(d => {
+    const v = Number(valores[d.id]) || 0, c = crudo[d.id]; let ef = 0, motivo = c ? c.motivo : '', flag = '';
+    if (!c || !Number.isFinite(c.efecto)) { if (v) { av.faltan.push(d.nombre); flag = 'sin valorar por la IA'; } }
+    else if (!v) { if (c.efecto !== 0) { av.sinInfoCorregidas.push(d.nombre); flag = 'la IA le dio efecto sin tener información: puesto a 0'; } }
+    else { if (Math.abs(c.efecto) > 2) av.recortadas++; ef = clampEf(c.efecto); }
+    return {id: d.id, nombre: d.nombre, bloque: d.bloque, valor: v, efecto: ef, motivo, flag};
+  });
+  return {contrib: out, crudo: Object.fromEntries(Object.entries(crudo).map(([k, c]) => [k, Number.isFinite(c.efecto) ? c.efecto : null])), av};
+}
+function avisosContrib(av) {
+  const a = [];
+  if (av.sinInfoCorregidas.length) a.push(`La IA asignó efecto a dimensiones sin información (${av.sinInfoCorregidas.join('; ')}). El código las ha puesto a 0.`);
+  if (av.faltan.length) a.push(`La IA no valoró: ${av.faltan.join('; ')}. Quedan en 0 y se marcan.`);
+  if (av.dup) a.push(`La IA repitió ${av.dup} dimensión(es); se usó la primera.`);
+  if (av.desconocidas) a.push(`La IA devolvió ${av.desconocidas} dimensión(es) que no existen en tu lista; se descartaron.`);
+  if (av.recortadas) a.push(`${av.recortadas} efecto(s) fuera de −2…+2 se recortaron.`);
+  return a;
+}
+const indiceDe = contrib => media(contrib.filter(c => c.valor > 0).map(c => c.efecto));
+function coherenciaPot(potencial, idx) {
+  const o = POT.indexOf(potencial); if (o < 0) return null;
+  return Math.abs(o - (idx + 2)) >= 2 ? `El potencial «${potencial}» no concuerda con la media de efectos (${idx.toFixed(2).replace('.', ',')}). Revisa el razonamiento.` : null;
+}
+const AÑOS = t => new Set(String(t).match(/\b(?:19|20)\d{2}\b/g) || []);
+function avisosTexto(rawTxt, perfil, nDims) {
+  const a = [], nuevos = numerosNuevos(rawTxt, perfil).filter(x => x !== String(nDims) && !/^(?:19|20)\d{2}$/.test(x));
+  if (nuevos.length) a.push(`La IA menciona cifras que no están en tus datos: ${nuevos.join(', ')}. Compruébalas.`);
+  const ya = AÑOS(perfil), anios = [...AÑOS(rawTxt)].filter(y => !ya.has(y));
+  if (anios.length) a.push(`La IA menciona años (${anios.join(', ')}) que no están en tus datos: podría estar citando una referencia. Se le pidió que no lo hiciera.`);
+  return a;
+}
+const mencionaDim = (txt, d) => { const t = norm(txt), pal = norm(d.nombre).split(' ').filter(w => w.length > 3); return t.includes(norm(d.id.replace(/_/g, ' '))) || t.includes(norm(d.nombre)) || (pal.length && pal.filter(w => t.includes(w)).length >= Math.min(2, pal.length)); };
+
+/* ── diagnóstico ── */
+function procesaDiag(raw, ctx) {
+  const {dims, valores, perfil} = ctx, ids = idsDe(dims), av = [];
+  raw = raw && typeof raw === 'object' ? raw : {};
+  const enm = (v, L, def) => { v = String(v || '').toLowerCase().trim(); return L.includes(v) ? v : def; };
+  const pc = procesaContrib(raw.contribuciones, dims, valores), contrib = pc.contrib, porId = Object.fromEntries(contrib.map(c => [c.id, c]));
+  av.push(...avisosContrib(pc.av));
+  const fac = (f, tipo) => {
+    const did = ids.includes(String(f.dimension_id)) ? String(f.dimension_id) : 'otro', d = dims.find(x => x.id === did), v = d ? (Number(valores[did]) || 0) : 0, ev = String(f.evidencia || '').trim(), ef = d ? porId[did].efecto : null;
+    return {factor: String(f.factor || '').trim(), dimension_id: did, peso: enm(f.peso, ['alto', 'medio', 'bajo'], 'medio'), evidencia: ev, fundada: fundada(ev, perfil, d, v),
+      sinInfo: !!d && !v, razonamiento: String(f.razonamiento || ''), perspectiva: String(f.perspectiva || ''), perspOk: perspOk(f.perspectiva),
+      incoherente: ef !== null && v > 0 && ((tipo === 'fav' && ef < 0) || (tipo === 'lim' && ef > 0))};
+  };
+  const favorables = (raw.favorables || []).map(f => fac(f || {}, 'fav')).filter(f => f.factor), limitantes = (raw.limitantes || []).map(f => fac(f || {}, 'lim')).filter(f => f.factor);
+  const todos = [...favorables, ...limitantes], nf0 = todos.filter(f => !f.fundada).length;
+  if (nf0) av.push(`${nf0} de ${todos.length} factor(es) no citan un dato tuyo comprobable (marcados ⚠). Trátalos como hipótesis de la IA.`);
+  if (todos.some(f => f.sinInfo)) av.push('Algún factor se apoya en una dimensión sin información (marcado ⚠).');
+  if (todos.some(f => f.incoherente)) av.push('Algún factor está clasificado en sentido contrario al efecto que la propia IA asigna a su dimensión (marcado ⚠).');
+  if (todos.some(f => !f.perspOk)) av.push('Algún factor cita una perspectiva que no es del marco de referencia (marcado ⚠).');
+  const sinP = [], preguntas = (raw.preguntas || []).map(q => ({pregunta: String(q && q.pregunta || '').trim(), por_que: String(q && q.por_que || ''), porCodigo: false})).filter(q => q.pregunta);
+  const sinPreguntar = [], preguntadas = [];
+  for (const d of dims) if (!(Number(valores[d.id]) || 0)) {
+    if (preguntas.some(q => mencionaDim(q.pregunta + ' ' + q.por_que, d))) preguntadas.push(d.id);
+    else { sinPreguntar.push(d.id); preguntas.push({pregunta: `¿Qué información tienes sobre «${d.nombre}»?`, por_que: 'Está marcada como sin información: el diagnóstico no ha podido tenerla en cuenta. (Pregunta añadida por el código.)', porCodigo: true}); }
+  }
+  if (sinPreguntar.length) av.push(`La IA no preguntó por ${sinPreguntar.length} dimensión(es) sin información; el código añadió la pregunta.`);
+  const pot = enm(raw.potencial, POT, 'medio'); if (!POT.includes(String(raw.potencial || '').toLowerCase().trim())) av.push('La IA no indicó un nivel de potencial válido; se ha puesto «medio».');
+  const idx = indiceDe(contrib), coh = coherenciaPot(pot, idx); if (coh) av.push(coh);
+  av.push(...avisosTexto(JSON.stringify(raw), perfil, dims.length));
+  const nSin = dims.filter(d => !(Number(valores[d.id]) || 0)).length;
+  const comp = raw.comparacion || {}, cc = k => ({argumentos: (comp[k] && Array.isArray(comp[k].argumentos) ? comp[k].argumentos : []).map(String), recomendable_si: String(comp[k] && comp[k].recomendable_si || '')});
+  return {potencial: pot, titulo: `Diagnóstico exploratorio: potencial de internacionalización acelerada ${pot}`, resumen: String(raw.resumen || ''), escenario: enm(raw.escenario_mas_plausible, ESC, 'mixto'), confianza: enm(raw.confianza, ['alta', 'media', 'baja'], 'media'), motivo_confianza: String(raw.motivo_confianza || ''),
+    favorables, limitantes, patrones: (raw.patrones || []).map(p => ({titulo: String(p.titulo || ''), dimensiones: POR_UN_ID(Array.isArray(p.dimensiones) ? p.dimensiones : [], ids), explicacion: String(p.explicacion || '')})).filter(p => p.titulo || p.explicacion),
+    comparacion: {secuencial: cc('secuencial'), acelerado: cc('acelerado'), valoracion: String(comp.valoracion || '')}, contrib, crudo: pc.crudo, preguntas, preguntadas, informacion_adicional: (raw.informacion_adicional || []).map(String), interpretacion: String(raw.interpretacion || ''),
+    avisos: av, indice: idx, nSinInfo: nSin, fundadas: todos.length - nf0, nFactores: todos.length};
+}
+
+/* ── simulación ── */
+function promptSim(base, perfil, cambios, dims, valores) {
+  const lista = Object.entries(cambios).map(([k, v]) => `- ${nombreDe(dims, k)}: de ${valores[k] || 'sin información'} a ${v} (escala 1–5${v ? '' : '; 0 = sin información'})`).join('\n');
+  return `DIAGNÓSTICO BASE (ya realizado):
+Potencial: ${base.potencial}. Escenario: ${base.escenario}. Resumen: ${base.resumen}
+Contribuciones base: ${base.contrib.map(c => `${c.id}=${c.efecto}`).join(', ')}
+
+PERFIL BASE:
+${perfil}
+
+ESCENARIO SIMULADO — cambios respecto al perfil base:
+${lista}
+
+Analiza cómo cambiaría el diagnóstico. Devuelve JSON:
+{"potencial":"alto|medio-alto|medio|medio-bajo|bajo","direccion":"mejora|empeora|sin cambios relevantes","resumen":"","efectos":[{"cambio":"","efecto":"","mecanismo":"","perspectiva":""}],"interacciones":"","limitantes_que_persisten":[""],"contribuciones":[{"id":"dimension_id","efecto":-2,"motivo":""}],"escenario_mas_plausible":"acelerado|secuencial|mixto","advertencia":""}
+Mantén coherencia con el diagnóstico base: solo deben variar las contribuciones afectadas por los cambios (o por sus interacciones, que debes explicar). En "contribuciones" incluye EXACTAMENTE estas ${dims.length} dimensiones, una vez cada una: ${listaDims(dims)}. Una dimensión sin información tiene efecto 0. No inventes cifras ni referencias.`;
+}
+function procesaSim(raw, base, cambios, ctx) {
+  const {dims, valores, perfil} = ctx, vs = {...valores, ...cambios}; raw = raw && typeof raw === 'object' ? raw : {};
+  const pc = procesaContrib(raw.contribuciones, dims, vs), av = avisosContrib(pc.av), c0 = Object.fromEntries(base.contrib.map(c => [c.id, c.efecto]));
+  const deltas = pc.contrib.map(c => ({id: c.id, d: c.efecto - (c0[c.id] || 0)})), sinExplicar = deltas.filter(x => !(x.id in cambios) && Math.abs(x.d) >= 2).map(x => nombreDe(dims, x.id));
+  if (sinExplicar.length) av.push(`Cambió mucho (≥2 puntos) el efecto de dimensiones que no modificaste: ${sinExplicar.join('; ')}. Revisa si la IA lo explica.`);
+  const sumD = deltas.reduce((s, x) => s + x.d, 0), dirCod = sumD > 0 ? 'mejora' : sumD < 0 ? 'empeora' : 'sin cambios relevantes';
+  const dirIA = ['mejora', 'empeora', 'sin cambios relevantes'].includes(String(raw.direccion || '').toLowerCase()) ? String(raw.direccion).toLowerCase() : dirCod;
+  if (dirIA !== dirCod && !(dirIA === 'sin cambios relevantes' && Math.abs(sumD) <= 1)) av.push(`La IA dice «${dirIA}», pero la suma de cambios en los efectos es ${signo(sumD)} (${dirCod}). Prevalece el cálculo del código en el gráfico.`);
+  const pot = POT.includes(String(raw.potencial || '').toLowerCase()) ? String(raw.potencial).toLowerCase() : base.potencial, idx = indiceDe(pc.contrib), coh = coherenciaPot(pot, idx); if (coh) av.push(coh);
+  av.push(...avisosTexto(JSON.stringify(raw), perfil + '\n' + JSON.stringify(cambios), dims.length));
+  return {cambios: {...cambios}, potencial: pot, direccion: dirIA, dirCodigo: dirCod, sumaDelta: sumD, resumen: String(raw.resumen || ''), efectos: (raw.efectos || []).map(e => ({cambio: String(e.cambio || ''), efecto: String(e.efecto || ''), mecanismo: String(e.mecanismo || ''), perspectiva: String(e.perspectiva || '')})),
+    interacciones: String(raw.interacciones || ''), persisten: (raw.limitantes_que_persisten || []).map(String), contrib: pc.contrib, escenario: ESC.includes(String(raw.escenario_mas_plausible || '').toLowerCase()) ? String(raw.escenario_mas_plausible).toLowerCase() : base.escenario, advertencia: String(raw.advertencia || ''), avisos: av, indice: idx};
+}
+
+/* ── pruebas de fiabilidad ── */
+function resumenEstabilidad(diags, dims) {
+  const pots = diags.map(d => d.potencial), filas = dims.map(d => { const xs = diags.map(r => (r.contrib.find(c => c.id === d.id) || {}).efecto || 0); return {id: d.id, nombre: d.nombre, efectos: xs, sd: desv(xs)}; });
+  const sdMedia = media(filas.map(f => f.sd)), inestables = filas.filter(f => f.sd >= 1);
+  return {pots, mismoPot: new Set(pots).size === 1, filas: filas.sort((a, b) => b.sd - a.sd), sdMedia, inestables, mismoEsc: new Set(diags.map(d => d.escenario)).size === 1,
+    veredicto: new Set(pots).size === 1 && inestables.length <= 1 ? 'Estable' : (new Set(pots).size > 2 || inestables.length > 3) ? 'Poco estable' : 'Moderadamente estable'};
+}
+function resultadoSinInfo(d, dimId, dims) {
+  const crudo = d.crudo[dimId], dim = dims.find(x => x.id === dimId);
+  return {dim: dim ? dim.nombre : dimId, efectoCrudo: crudo === undefined ? null : crudo, efectoCero: crudo === undefined || crudo === null || crudo === 0, pregunto: d.preguntadas.includes(dimId), usadoComoFactor: [...d.favorables, ...d.limitantes].some(f => f.dimension_id === dimId), confianza: d.confianza, potencial: d.potencial};
+}
+
+/* ── rellenar dimensiones desde un texto libre (la IA propone con cita literal; el código verifica la cita) ── */
+function promptExtrae(texto, dims) {
+  return `Lee el texto sobre una empresa y propón la valoración de cada dimensión (escala 1–5; 0 = el texto NO da información; no la supongas).
+Dimensiones: ${dims.map(d => `${d.id} = ${d.nombre} (1=${d.lo}, 5=${d.hi})`).join('; ')}.
+Devuelve SOLO este JSON:
+{"empresa":{"nombre":"","sector":"","origen":"","mercados":"","producto":"","situacion":"","otros":""},"dimensiones":[{"id":"dimension_id","valor":0,"cita":"fragmento LITERAL del texto (8 a 25 palabras) que justifica el valor; vacío si valor 0","razon":"una frase"}]}
+Incluye una entrada por cada dimensión. La cita se copia sin cambiar nada. No añadas hechos, cifras ni nombres que no estén en el texto.
+
+TEXTO:
+${texto}`;
+}
+function procesaExtrae(raw, texto, dims) {
+  raw = raw && typeof raw === 'object' ? raw : {}; const por = {};
+  for (const x of (raw.dimensiones || [])) if (x && !(String(x.id) in por)) por[String(x.id)] = x;
+  const filas = dims.map(d => { const x = por[d.id] || {}, v = Math.max(0, Math.min(5, Math.round(Number(x.valor) || 0))), cita = String(x.cita || '').trim(), ok = v === 0 ? true : esFiel(texto, cita);
+    return {id: d.id, nombre: d.nombre, valor: v, cita, razon: String(x.razon || ''), ok, aplicar: v > 0 && ok}; });
+  const e = raw.empresa || {}, emp = {}; for (const k of Object.keys(EMPRESA_VACIA)) emp[k] = String(e[k] || '').slice(0, 600);
+  return {empresa: emp, filas, nVerificadas: filas.filter(f => f.valor > 0 && f.ok).length, nSinVerificar: filas.filter(f => f.valor > 0 && !f.ok).length};
+}
+
+/* ── casos docentes ── */
+function promptCaso(p, dims) {
+  const refs = dims.map(d => `{"id":"${d.id}","efecto":-2..2,"motivo":""}`).join(',');
+  return `Genera un CASO DOCENTE ficticio y verosímil sobre internacionalización de la empresa.
+Sector: ${p.sector}. Tipo de proceso: ${p.tipo === 'ambiguo' ? 'ambiguo (combina factores aceleradores y limitantes, sin revelarlo en la narrativa)' : p.tipo}.
+Alumnado: ${p.nivel}${p.asignatura ? ' (' + p.asignatura + ')' : ''}. Narrativa de unas ${p.palabras} palabras, en 3 o 4 párrafos.${p.notas ? '\nIndicaciones del profesorado: ' + p.notas : ''}
+La narrativa debe incluir de forma natural datos concretos sobre estas ${dims.length} dimensiones SIN nombrarlas literalmente: ${dims.map(d => `${d.id} (${d.nombre}; 1=${d.lo}, 5=${d.hi})`).join('; ')}. Empresas y personas ficticias. No incluyas la solución en la narrativa.
+Devuelve JSON: {"titulo":"","narrativa":["párrafos"],"preguntas":["5 preguntas de menor a mayor complejidad"],"guia_profesor":{"tipo_de_proceso":"","factores_aceleradores":[""],"factores_limitantes":[""],"respuestas_orientativas":["una por pregunta"],"referencia":{"potencial":"alto|medio-alto|medio|medio-bajo|bajo","escenario":"acelerado|mixto|secuencial","valores":[{"id":"dimension_id","valor":1}],"efectos":[${refs}]}}}
+En "referencia" incluye las ${dims.length} dimensiones: "valor" es el nivel 1–5 que la narrativa da a cada una (0 si no dice nada) y "efecto" va de -2 (frena la aceleración) a +2 (la impulsa).`;
+}
+function procesaCaso(raw, p, dims) {
+  raw = raw && typeof raw === 'object' ? raw : {}; const av = [], g = raw.guia_profesor || {}, ref = g.referencia || {}, ids = idsDe(dims);
+  const narr = (Array.isArray(raw.narrativa) ? raw.narrativa : [String(raw.narrativa || '')]).map(String).filter(s => s.trim()), palabras = wc(narr.join(' '));
+  if (!narr.length) av.push('La IA no devolvió narrativa.');
+  else if (Math.abs(palabras - p.palabras) > p.palabras * 0.4) av.push(`La narrativa tiene ${palabras} palabras (pedidas: unas ${p.palabras}).`);
+  const nombradas = dims.filter(d => norm(narr.join(' ')).includes(norm(d.nombre))).map(d => d.nombre); if (nombradas.length) av.push(`La narrativa nombra literalmente dimensiones (${nombradas.join('; ')}): quita esas expresiones para no dar pistas.`);
+  const preguntas = (raw.preguntas || []).map(String).filter(s => s.trim()); if (preguntas.length < 5) av.push(`Solo hay ${preguntas.length} pregunta(s); se pedían 5.`);
+  const pe = procesaContrib(Array.isArray(ref.efectos) ? ref.efectos : [], dims, Object.fromEntries(dims.map(d => [d.id, 1])));
+  if (pe.av.faltan.length) av.push(`La referencia de la IA no cubre: ${pe.av.faltan.join('; ')} (quedan en 0).`);
+  const valores = {}; for (const x of (Array.isArray(ref.valores) ? ref.valores : [])) if (x && ids.includes(String(x.id)) && !(String(x.id) in valores)) valores[String(x.id)] = Math.max(0, Math.min(5, Math.round(Number(x.valor) || 0)));
+  const efectos = Object.fromEntries(pe.contrib.map(c => [c.id, c.efecto])), motivos = Object.fromEntries(pe.contrib.map(c => [c.id, c.motivo]));
+  const pot = POT.includes(String(ref.potencial || '').toLowerCase()) ? String(ref.potencial).toLowerCase() : 'medio', o = POT.indexOf(pot);
+  if ((p.tipo === 'acelerado' && o < 3) || (p.tipo === 'secuencial' && o > 1) || (p.tipo === 'ambiguo' && (o === 0 || o === 4))) av.push(`Pediste un caso «${p.tipo}», pero la referencia de la IA da potencial «${pot}». Revisa que el caso encaje con lo que quieres trabajar.`);
+  const idx = media(Object.values(efectos)), coh = coherenciaPot(pot, idx); if (coh) av.push('Referencia: ' + coh);
+  return {id: uid('c_'), titulo: String(raw.titulo || 'Caso sin título'), narrativa: narr, preguntas,
+    guia: {tipo_de_proceso: String(g.tipo_de_proceso || ''), factores_aceleradores: (g.factores_aceleradores || []).map(String), factores_limitantes: (g.factores_limitantes || []).map(String), respuestas_orientativas: (g.respuestas_orientativas || []).map(String)},
+    referencia: {potencial: pot, escenario: ESC.includes(String(ref.escenario || '').toLowerCase()) ? String(ref.escenario).toLowerCase() : 'mixto', valores, efectos, motivos},
+    dims: dims.map(d => ({...d})), meta: {...p, modelo: typeof getMod === 'function' ? getMod() : '', fecha: new Date().toISOString().slice(0, 10)}, avisos: av};
+}
+const casoAlumnado = c => ({id: c.id, titulo: c.titulo, narrativa: c.narrativa, preguntas: c.preguntas, dims: c.dims, meta: c.meta});
+
+/* ── comparación del análisis del alumnado con una referencia (la hace el código) ── */
+function comparaAnalisis(alu, ref, dims) {
+  const filas = dims.map(d => { const a = alu.efectos[d.id], r = (ref.efectos || {})[d.id] || 0, marcada = a !== undefined && a !== null;
+    const dif = marcada ? a - r : null, estado = !marcada ? 'sin marcar' : dif === 0 ? 'coincide' : Math.abs(dif) === 1 ? 'cercano' : 'distinto';
+    return {id: d.id, nombre: d.nombre, alu: marcada ? a : null, ref: r, dif, estado, motivo: (ref.motivos || {})[d.id] || ''}; });
+  const m = filas.filter(f => f.alu !== null), noVistos = filas.filter(f => Math.abs(f.ref) >= 1 && (f.alu === null || f.alu === 0)).map(f => f.nombre);
+  return {filas, marcadas: m.length, coinciden: m.filter(f => f.estado === 'coincide').length, cercanos: m.filter(f => f.estado === 'cercano').length, distintos: m.filter(f => f.estado === 'distinto').length,
+    mae: m.length ? media(m.map(f => Math.abs(f.dif))) : null, noVistos, potencialDif: alu.potencial && POT.includes(alu.potencial) ? POT.indexOf(alu.potencial) - POT.indexOf(ref.potencial) : null,
+    escenarioIgual: alu.escenario ? alu.escenario === ref.escenario : null};
+}
+const refDeDiag = d => ({potencial: d.potencial, escenario: d.escenario, efectos: Object.fromEntries(d.contrib.map(c => [c.id, c.efecto])), motivos: Object.fromEntries(d.contrib.map(c => [c.id, c.motivo]))});
+
+/* ══ Interfaz y flujo de InternacionalIA ══ */
+const STEPS = ['Inicio', 'Empresa', 'Diagnóstico', 'Simulación', 'Fiabilidad'];
+const HUBS = ['Casos docentes', 'Alumnado'];
+const NAV = [['Empezar', 'Prueba con el ejemplo: no necesita clave.'], ['Siguiente: diagnóstico', 'Describe la empresa o rellénala desde un texto.'], ['Siguiente: simulación', 'Diagnostica y revisa lo que el código ha comprobado.'], ['Siguiente: fiabilidad', 'Cambia variables y mira cómo se mueve el diagnóstico.'], ['Volver al inicio', 'Comprueba la estabilidad y la fundamentación.']];
+const RENDER = {0: pintaInicio, 1: pintaEmpresa, 2: pintaDiag, 3: pintaSim, 4: pintaFiab, 5: pintaCasos, 6: pintaAlu};
+const GLOS = [
+  ['¿Qué es?', 'Un diagnóstico exploratorio: la IA relaciona las características de una empresa con los factores que la literatura asocia a una internacionalización acelerada (born globals) o secuencial (Uppsala). No es una predicción ni una validación empírica, y no sustituye un análisis académico o empresarial riguroso.'],
+  ['Escala 1–5 y «sin información»', 'Valora cada dimensión de 1 (muy bajo) a 5 (muy alto). «?» significa que no lo sabes: la IA no debe suponerlo, no le da efecto y pregunta por ello. Si lo hace igualmente, el código lo corrige y lo avisa.'],
+  ['Qué comprueba el código', 'Que cada factor cita un dato tuyo (cita literal o «dimensión: N/5» con el valor correcto); que las dimensiones sin información tienen efecto 0 y generan pregunta; que los efectos están entre −2 y +2; que el potencial es coherente con la media de efectos; y que la IA no introduce cifras ni años que no estén en tus datos.'],
+  ['Efecto de cada dimensión', 'Estimación cualitativa del modelo, de −2 (frena mucho la aceleración) a +2 (la impulsa mucho). No son coeficientes estimados empíricamente.'],
+  ['Simulación', 'Cambias una o varias dimensiones y la IA explica cómo cambia el diagnóstico. El código compara con el diagnóstico base y avisa de variaciones sin explicar o de contradicciones.'],
+  ['Fiabilidad', 'Repite el diagnóstico para medir la estabilidad, oculta una dimensión para ver si la IA respeta lo que no sabe y revisa la fundamentación de cada factor. Cada repetición es una llamada de pago a tu proveedor.'],
+  ['Dimensiones editables', 'Puedes añadir, quitar o renombrar dimensiones. Para cada una define qué significa 1 y qué significa 5. Las que añadas no tienen perspectiva teórica asociada: la IA las tratará como «Otra».'],
+  ['Casos docentes y alumnado', 'El profesorado genera un caso ficticio con guía; el alumnado hace su propio análisis (efecto de cada dimensión de −2 a +2) y el código lo compara con la guía o con un diagnóstico independiente de la IA. Es una herramienta de aprendizaje: no pone notas.'],
+  ['Privacidad', 'Todo se guarda solo en este navegador. A tu proveedor de IA (OpenAI, Google o Anthropic, con tu clave) sale el perfil de la empresa con correos, teléfonos y DNI enmascarados y, por defecto, sin el nombre de la empresa. Antes del primer envío ves exactamente lo que sale. No pegues datos personales ni confidenciales que no quieras enviar.'],
+  ['Tu clave de IA', 'Funciona con OpenAI, Google Gemini o Anthropic Claude. La clave se guarda solo en este navegador y no se incluye en ningún fichero exportado.']
+];
+const nuevoEstado = () => ({empresa: {...EMPRESA_VACIA}, dims: DIMS_BASE.map(d => ({...d})), valores: {}, notas: {}, anonimo: true, diag: null, sim: {cambios: {}, res: null}, fiab: {estab: null, sinInfo: null}, extrae: {texto: '', res: null},
+  casoParams: {sector: 'Industria alimentaria', nivel: '1.º de Grado', asignatura: '', tipo: 'ambiguo', palabras: 350, notas: ''}, caso: null, alu: null, uso: [], esEjemplo: false});
+let S = nuevoEstado(), busy = false, ENVIO_OK = false;
+const hash = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
+const perfilActual = () => perfilTexto(S.empresa, S.dims, S.valores, S.notas, S.anonimo);
+const sigDatos = () => hash(canon([S.empresa, S.dims.map(d => [d.id, d.nombre, d.lo, d.hi]), S.valores, S.notas, S.anonimo]));
+const nValoradas = () => S.dims.filter(d => (Number(S.valores[d.id]) || 0) > 0).length;
+const hoy = () => new Date().toLocaleDateString('es-ES');
+const cancelado = () => Object.assign(new Error('Envío cancelado'), {cancel: true});
+const confirma2 = (clave, msg) => { if (confirma2.k === clave && Date.now() - confirma2.t < 6000) { confirma2.k = null; return true; } confirma2.k = clave; confirma2.t = Date.now(); toast(msg, 6000); return false; };
+
+/* ── aviso previo al envío (una vez por sesión) ── */
+let envioRes = null;
+function pideEnvio(txt, masks, llamadas) {
+  if (ENVIO_OK) return Promise.resolve(true);
+  $('envioInfo').innerHTML = `<p class="sub" style="margin-top:0">Se enviarán unos ${nf(txt.length)} caracteres (≈ ${nf(txt.length / 3.6)} tokens) a ${esc(PROV[getProv()].n)}${llamadas > 1 ? `, en ${llamadas} llamadas de este tamaño` : ''}. Se han enmascarado ${masks} dato(s) personales (correos, teléfonos, DNI).${S.anonimo ? ' El nombre de la empresa no sale.' : ' <b>El nombre de la empresa sí sale.</b>'}</p><p class="help">Muestra del envío:</p>`;
+  $('envioTxt').textContent = txt.slice(0, 3500) + (txt.length > 3500 ? '\n…' : '');
+  $('envioOk').checked = false; $('envioSi').disabled = true; $('mEnvio').classList.add('on');
+  return new Promise(r => { envioRes = r; });
+}
+function cierraEnvio(v) { $('mEnvio').classList.remove('on'); if (envioRes) { const r = envioRes; envioRes = null; if (v) ENVIO_OK = true; r(v); } }
+_cierres.mEnvio = () => cierraEnvio(false);
+$('envioOk').onchange = () => { $('envioSi').disabled = !$('envioOk').checked; };
+$('envioSi').onclick = () => cierraEnvio(true); $('envioNo').onclick = () => cierraEnvio(false);
+
+async function iaJSON(fase, user, {system = SISTEMA, max = 5500, llamadas = 1} = {}) {
+  if (!pideClave()) throw cancelado();
+  const {t, n} = scrub(user);
+  if (!(await pideEnvio(t, n, llamadas))) throw cancelado();
+  const raw = await llmJSON([{role: 'system', content: system}, {role: 'user', content: t}], {max});
+  S.uso.push({fecha: new Date().toISOString(), fase, proveedor: getProv(), modelo: getMod()}); await guardaYa();
+  return raw;
+}
+async function corre(estadoId, msg, fn) {
+  if (busy) return toast('Espera a que termine la operación en curso');
+  busy = true; const el = $(estadoId); el.innerHTML = `<span class="spin"></span> ${esc(msg)}`;
+  try { await fn(); el.textContent = ''; } catch (e) { el.textContent = e.cancel ? '' : e.message; if (!e.cancel) toast(e.message, 8000); } finally { busy = false; }
+}
+const SISTEMA_DOC = 'Eres un asistente docente de Organización de Empresas. Creas casos ficticios y rigurosos sobre internacionalización. Respondes SOLO con JSON válido.';
+
+/* ═════ pantalla 0: inicio ═════ */
+function pintaInicio() {
+  const hay = S.diag || nValoradas();
+  $('inicioProj').innerHTML = hay && !S.esEjemplo ? `Tienes un trabajo guardado en este navegador${S.empresa.nombre ? ' (' + esc(S.empresa.nombre) + ')' : ''}. <button class="btn btn-ghost btn-sm" id="btnCont" type="button">Continuar</button>` : (S.esEjemplo ? 'Estás viendo el ejemplo (ficticio). <button class="btn btn-ghost btn-sm" id="btnCont" type="button">Seguir en él</button>' : '');
+}
+$('btnStart').onclick = () => go(1);
+$('btnHubCasos').onclick = () => go(5); $('btnHubAlu').onclick = () => go(6);
+document.addEventListener('click', e => { if (e.target.id === 'btnCont') go(S.diag ? 2 : 1); });
+function cargaEjemplo() {
+  const trabajando = !S.esEjemplo && (S.empresa.nombre || S.diag || nValoradas());
+  if (trabajando && !confirma2('ej', 'El ejemplo sustituirá la empresa que tienes ahora. Descarga tu proyecto antes o pulsa otra vez para continuar.')) return;
+  const prev = S; S = nuevoEstado(); S.casoParams = prev.casoParams; S.uso = prev.uso;
+  Object.assign(S, {empresa: {...EJ_EMPRESA}, valores: {...EJ_VALORES}, notas: {...EJ_NOTAS}, anonimo: false, esEjemplo: true});
+  const perfil = perfilActual(); S.diag = procesaDiag(EJ_DIAG_RAW, {dims: S.dims, valores: S.valores, perfil}); Object.assign(S.diag, {sig: sigDatos(), modelo: 'ejemplo precalculado', fecha: hoy()});
+  S.sim = {cambios: {...EJ_SIM_CAMBIOS}, res: procesaSim(EJ_SIM_RAW, S.diag, EJ_SIM_CAMBIOS, {dims: S.dims, valores: S.valores, perfil})};
+  guarda(); go(2); toast('Ejemplo de demostración (empresa ficticia), sin usar la IA');
+}
+$('btnEjemplo').onclick = cargaEjemplo;
+const exportaProyecto = () => ({formato: 'internacionalia/1', app: APP_NAME, version: APP_VERSION, autores: [{nombre: 'Fernando Borrás Rocher', orcid: '0000-0002-5519-4573'}, {nombre: 'María Antonia Vaquero Sánchez', orcid: '0009-0000-1724-5301'}], fecha: new Date().toISOString(), estado: S});
+$('btnProjSave').onclick = () => dl('internacionalia_proyecto.json', JSON.stringify(exportaProyecto(), null, 1), 'application/json');
+$('btnProjOpen').onclick = () => $('fileProj').click();
+$('fileProj').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try { const j = JSON.parse(await f.text()); if (j.formato !== 'internacionalia/1' || !j.estado) throw new Error(); S = {...nuevoEstado(), ...j.estado}; S.casoParams = {...nuevoEstado().casoParams, ...(j.estado.casoParams || {})}; await guardaYa(); go(S.diag ? 2 : 1); toast('Proyecto abierto'); }
+  catch { toast('Ese fichero no es un proyecto de InternacionalIA (.json).', 6000); }
+};
+
+/* ═════ pantalla 1: empresa ═════ */
+const CAMPOS = ['nombre', 'sector', 'origen', 'mercados', 'producto', 'situacion', 'otros'];
+function pintaEmpresa() {
+  CAMPOS.forEach(k => { $('e_' + k).value = S.empresa[k] || ''; });
+  $('chkAnon').checked = !!S.anonimo; $('txtLibre').value = S.extrae.texto || ''; $('extraeRes').innerHTML = htmlExtrae(); pintaDims();
+}
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.e) { S.empresa[t.dataset.e] = t.value; S.esEjemplo = false; guarda(); }
+  else if (t.classList && t.classList.contains('fa-nota')) { const id = t.closest('.fa-dim').dataset.id; if (t.value) S.notas[id] = t.value; else delete S.notas[id]; guarda(); }
+  else if (t.id === 'txtLibre') { S.extrae.texto = t.value; guarda(); }
+});
+$('chkAnon').onchange = e => { S.anonimo = e.target.checked; guarda(); };
+function pintaDims() {
+  const bl = [...new Set(S.dims.map(d => d.bloque))]; let h = '';
+  for (const b of bl) {
+    h += `<h4 class="fa-bloque" style="--c:${BLOQUES[b] || '#5D7691'}">${esc(b)}</h4>`;
+    for (const d of S.dims.filter(x => x.bloque === b)) {
+      const v = Number(S.valores[d.id]) || 0;
+      h += `<div class="fa-dim" data-id="${esc(d.id)}"><div class="fa-dn"><b>${esc(d.nombre)}</b><small>1 = ${esc(d.lo)} · 5 = ${esc(d.hi)}</small></div>
+        <div class="fa-esc" role="group" aria-label="${esc(d.nombre)}">${[0, 1, 2, 3, 4, 5].map(n => `<button type="button" data-v="${n}" aria-pressed="${v === n}" title="${n ? n + ' de 5' : 'Sin información'}">${n || '?'}</button>`).join('')}</div>
+        <input type="text" class="fa-nota" value="${esc(S.notas[d.id] || '')}" placeholder="Detalle o dato que lo justifica (opcional)" aria-label="Detalle de ${esc(d.nombre)}"></div>`;
+    }
+  }
+  $('dimsList').innerHTML = h; cuentaDims();
+}
+function cuentaDims() { const n = nValoradas(), s = S.dims.length - n; $('dimsCuenta').innerHTML = `<b>${n}</b> de ${S.dims.length} valoradas · <b>${s}</b> sin información (la IA no las supondrá y preguntará por ellas)`; }
+$('dimsList').addEventListener('click', e => {
+  const b = e.target.closest('button[data-v]'); if (!b) return; const row = b.closest('.fa-dim'), id = row.dataset.id, v = +b.dataset.v;
+  if (v) S.valores[id] = v; else delete S.valores[id]; S.esEjemplo = false;
+  row.querySelectorAll('button[data-v]').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.v === v))); cuentaDims(); guarda();
+});
+/* editor de dimensiones */
+let dimsDraft = [];
+function pintaEditDims() {
+  $('dimsEdit').innerHTML = dimsDraft.map((d, i) => `<div class="fa-de" data-i="${i}"><div class="field"><label>Nombre</label><input type="text" data-f="nombre" value="${esc(d.nombre)}"></div>
+    <div class="field"><label>Bloque</label><select data-f="bloque">${Object.keys(BLOQUES).map(b => `<option${b === d.bloque ? ' selected' : ''}>${esc(b)}</option>`).join('')}</select></div>
+    <div class="field"><label>1 significa…</label><input type="text" data-f="lo" value="${esc(d.lo)}"></div><div class="field"><label>5 significa…</label><input type="text" data-f="hi" value="${esc(d.hi)}"></div>
+    <button class="btn btn-ghost btn-sm" type="button" data-del="${i}" aria-label="Quitar ${esc(d.nombre)}">${ico('trash')}Quitar</button></div>`).join('');
+}
+$('btnDimsEdit').onclick = () => { dimsDraft = S.dims.map(d => ({...d})); pintaEditDims(); $('dimsErr').textContent = ''; $('mDims').classList.add('on'); };
+$('dimsEdit').addEventListener('input', e => { const r = e.target.closest('.fa-de'); if (r && e.target.dataset.f) dimsDraft[+r.dataset.i][e.target.dataset.f] = e.target.value; });
+$('dimsEdit').addEventListener('click', e => { const b = e.target.closest('[data-del]'); if (b) { dimsDraft.splice(+b.dataset.del, 1); pintaEditDims(); } });
+$('btnDimAdd').onclick = () => { dimsDraft.push({id: '', bloque: 'Otras', nombre: 'Nueva dimensión', lo: 'bajo', hi: 'alto'}); pintaEditDims(); };
+$('btnDimsBase').onclick = () => { if (!confirma2('dims', 'Se restablecerán las 15 dimensiones del cuaderno original. Pulsa otra vez para confirmar.')) return; dimsDraft = DIMS_BASE.map(d => ({...d})); pintaEditDims(); };
+$('btnDimsOk').onclick = () => {
+  const ns = dimsDraft.map(d => norm(d.nombre)), err = dimsDraft.length < 3 ? 'Deja al menos 3 dimensiones.' : dimsDraft.length > 25 ? 'Máximo 25 dimensiones (cada una aumenta el coste de cada llamada).' : dimsDraft.some(d => !norm(d.nombre) || !norm(d.lo) || !norm(d.hi)) ? 'Cada dimensión necesita nombre y qué significan el 1 y el 5.' : new Set(ns).size < ns.length ? 'Hay nombres repetidos.' : '';
+  if (err) { $('dimsErr').textContent = err; return; }
+  const usados = new Set(dimsDraft.map(d => d.id).filter(Boolean));
+  dimsDraft.forEach(d => { if (!d.id) { let id = 'x_' + slug(d.nombre).slice(0, 24), k = 1; while (usados.has(id)) id = 'x_' + slug(d.nombre).slice(0, 22) + (++k); d.id = id; usados.add(id); } d.nombre = d.nombre.trim(); d.lo = d.lo.trim(); d.hi = d.hi.trim(); });
+  const ids = new Set(dimsDraft.map(d => d.id)); for (const k of Object.keys(S.valores)) if (!ids.has(k)) delete S.valores[k]; for (const k of Object.keys(S.notas)) if (!ids.has(k)) delete S.notas[k];
+  S.dims = dimsDraft; S.esEjemplo = false; $('mDims').classList.remove('on'); guarda(); pintaDims(); toast('Dimensiones actualizadas. Si ya diagnosticaste, vuelve a hacerlo.');
+};
+/* rellenar desde un texto libre */
+function htmlExtrae() {
+  const r = S.extrae.res; if (!r) return '';
+  return `<div class="aviso">La IA propone un valor por dimensión con una cita de tu texto. El código ha comprobado cada cita: <b>${r.nVerificadas}</b> verificada(s)${r.nSinVerificar ? `, <b>${r.nSinVerificar}</b> con cita que no aparece en el texto (desmarcadas por defecto)` : ''}. Revisa y aplica.</div>
+  <div class="table-wrap"><table><thead><tr><th>Aplicar</th><th>Dimensión</th><th>Valor</th><th>Cita en el texto</th></tr></thead><tbody>${r.filas.map((f, i) => `<tr><td><input type="checkbox" data-ap="${i}" ${f.aplicar ? 'checked' : ''} ${f.valor ? '' : 'disabled'} aria-label="Aplicar ${esc(f.nombre)}"></td><td>${esc(f.nombre)}</td><td>${f.valor || '?'}</td><td>${f.valor ? (f.ok ? '✓ «' + esc(f.cita) + '»' : '⚠ la cita no aparece en tu texto: «' + esc(f.cita) + '»') : '<small class="muted">el texto no da información</small>'}</td></tr>`).join('')}</tbody></table></div>
+  <div class="actions"><button class="btn btn-primary" id="btnAplicaExtrae" type="button">Aplicar lo marcado</button></div>`;
+}
+$('extraeRes').addEventListener('change', e => { if (e.target.dataset.ap !== undefined) S.extrae.res.filas[+e.target.dataset.ap].aplicar = e.target.checked; });
+$('extraeRes').addEventListener('click', e => {
+  if (e.target.id !== 'btnAplicaExtrae') return; const r = S.extrae.res; let n = 0;
+  for (const f of r.filas) if (f.aplicar && f.valor) { S.valores[f.id] = f.valor; S.notas[f.id] = f.ok ? f.cita : f.razon; n++; }
+  CAMPOS.forEach(k => { if (!String(S.empresa[k] || '').trim() && r.empresa[k] && k !== 'nombre') S.empresa[k] = r.empresa[k]; if (k === 'nombre' && !S.empresa.nombre && r.empresa.nombre) S.empresa.nombre = r.empresa.nombre; });
+  S.esEjemplo = false; guarda(); pintaEmpresa(); toast(`${n} dimensión(es) aplicadas`);
+});
+$('btnExtrae').onclick = () => corre('extraeEstado', 'Leyendo el texto…', async () => {
+  const txt = S.extrae.texto.trim(); if (wc(txt) < 40) throw new Error('Pega un texto de al menos unas 40 palabras.');
+  const raw = await iaJSON('extraer dimensiones', promptExtrae(txt, S.dims), {max: 4500, system: SISTEMA});
+  S.extrae.res = procesaExtrae(raw, txt, S.dims); await guardaYa(); $('extraeRes').innerHTML = htmlExtrae();
+});
+
+/* ═════ diagnóstico ═════ */
+async function diagnosticaCon(E, dims, valores, notas, anon, fase) {
+  const perfil = perfilTexto(E, dims, valores, notas, anon);
+  const raw = await iaJSON(fase || 'diagnóstico', promptDiag(perfil, dims), {max: 6000});
+  const d = procesaDiag(raw, {dims, valores, perfil}); d.modelo = getMod(); d.fecha = hoy(); return d;
+}
+$('btnDiag').onclick = () => corre('diagEstado', 'La IA está razonando el diagnóstico… (puede tardar un minuto)', async () => {
+  if (nValoradas() < 4) throw new Error('Valora al menos 4 dimensiones para que haya algo que razonar.');
+  if (wc(Object.values(S.empresa).join(' ')) < 6) throw new Error('Añade una breve descripción de la empresa (sector, producto, situación).');
+  const sig = sigDatos(), d = await diagnosticaCon(S.empresa, S.dims, S.valores, S.notas, S.anonimo); d.sig = sig;
+  S.diag = d; S.sim = {cambios: {}, res: null}; S.fiab = {estab: null, sinInfo: null}; S.esEjemplo = false; await guardaYa(); pintaDiag(); toast('Diagnóstico listo');
+});
+const desactualizado = () => !!S.diag && S.diag.sig !== sigDatos() && !S.esEjemplo;
+const fmtN = n => (n >= 0 ? '+' : '−') + Math.abs(n).toFixed(2).replace('.', ',');
+function barras(a, b) {
+  const pieza = (ef, k) => ef === 0 ? `<i class="fa-f ${k} cero" style="left:49.4%;width:1.2%"></i>` : `<i class="fa-f ${k} ${ef > 0 ? 'pos' : 'neg'}" style="left:${ef > 0 ? 50 : 50 + ef * 25}%;width:${Math.abs(ef) * 25}%"></i>`;
+  return `<div class="fa-bars" role="img" aria-label="Efecto estimado de cada dimensión sobre la aceleración, de menos 2 a más 2">${b ? '<p class="fa-leyenda"><i class="fa-sw base"></i>Base <i class="fa-sw sim"></i>Simulado</p>' : ''}
+  <div class="fa-eje"><span>← frena</span><span>0</span><span>impulsa →</span></div>${a.map((c, i) => `<div class="fa-bar"><span class="fa-bn" title="${esc(c.motivo)}">${esc(c.nombre)}${c.valor ? '' : ' <em>(sin información)</em>'}</span><div class="fa-bt">${c.valor ? pieza(c.efecto, 'a') : ''}${b && b[i] && b[i].valor ? pieza(b[i].efecto, 'b') : ''}</div><span class="fa-bv">${c.valor ? (b ? signo(c.efecto) + ' → ' + signo(b[i].efecto) : signo(c.efecto)) : '—'}</span></div>${b || !c.motivo || !c.valor ? '' : `<small class="fa-bm">${esc(c.motivo)}</small>`}`).join('')}</div>`;
+}
+const chipPot = p => `<span class="fa-chip pot${POT.indexOf(p)}">${esc(p)}</span>`;
+function htmlFactor(f) {
+  const marcas = [!f.fundada ? '⚠ sin dato comprobable' : '', f.sinInfo ? '⚠ dimensión sin información' : '', f.incoherente ? '⚠ sentido contrario al efecto asignado' : '', !f.perspOk ? '⚠ perspectiva fuera del marco' : ''].filter(Boolean);
+  return `<div class="fa-fac ${f.fundada && !marcas.length ? '' : 'dudoso'}"><div class="fa-fh"><b>${esc(f.factor)}</b><span class="fa-chip">peso ${esc(f.peso)}</span>${f.fundada ? '<span class="fa-chip ok">✓ dato verificado</span>' : ''}</div>
+  <p class="fa-ev"><small>Dato:</small> «${esc(f.evidencia)}»</p><p>${esc(f.razonamiento)}</p><p class="help">Perspectiva: ${esc(f.perspectiva) || '—'} · Dimensión: ${esc(f.dimension_id === 'otro' ? 'otra' : nombreDe(S.dims, f.dimension_id))}</p>${marcas.length ? `<p class="fa-marca">${marcas.map(esc).join(' · ')}</p>` : ''}</div>`;
+}
+function htmlDiag(d) {
+  const lista = (t, a) => a.length ? `${t ? `<h4 class="fa-h4">${t}</h4>` : ''}<ul class="fa-ul">${a.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '';
+  return `<div class="fa-cab"><h3 class="fa-titulo">${esc(d.titulo)}</h3><p class="fa-chips">${chipPot(d.potencial)}<span class="fa-chip">Escenario más plausible: <b>${esc(d.escenario)}</b></span><span class="fa-chip">Confianza: <b>${esc(d.confianza)}</b></span><span class="fa-chip" title="Media de los efectos de las dimensiones valoradas (−2…+2), calculada por el código">Índice orientativo: <b>${fmtN(d.indice)}</b></span></p>
+  <p>${esc(d.resumen)}</p>${d.motivo_confianza ? `<p class="help">Por qué esa confianza: ${esc(d.motivo_confianza)}</p>` : ''}</div>
+  ${d.avisos.length ? `<div class="aviso"><b>Comprobaciones del código</b><ul class="fa-ul">${d.avisos.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : '<div class="okbox">El código no encontró incoherencias en este diagnóstico.</div>'}
+  <p class="help">Fundamentación: <b>${d.fundadas} de ${d.nFactores}</b> factores citan un dato tuyo verificable.</p>
+  <h4 class="fa-h4">Factores que favorecen la aceleración</h4>${d.favorables.map(htmlFactor).join('') || '<p class="empty">Ninguno identificado.</p>'}
+  <h4 class="fa-h4">Factores limitantes</h4>${d.limitantes.map(htmlFactor).join('') || '<p class="empty">Ninguno identificado.</p>'}
+  <h4 class="fa-h4">Razonamiento visible: efecto de cada dimensión</h4><p class="help">De −2 (frena mucho) a +2 (impulsa mucho). Estimación cualitativa del modelo, no un coeficiente. Las dimensiones sin información no tienen barra.</p>${barras(d.contrib)}
+  ${d.patrones.length ? `<h4 class="fa-h4">Patrones entre dimensiones</h4><ul class="fa-ul">${d.patrones.map(p => `<li><b>${esc(p.titulo)}</b>${p.dimensiones.length ? ` <small class="muted">(${p.dimensiones.map(i => esc(nombreDe(S.dims, i))).join(', ')})</small>` : ''}<br>${esc(p.explicacion)}</li>`).join('')}</ul>` : ''}
+  <h4 class="fa-h4">Secuencial frente a acelerado</h4><div class="grid2"><div class="fa-cmp"><b>Secuencial</b>${lista('', d.comparacion.secuencial.argumentos)}<p class="help">Recomendable si: ${esc(d.comparacion.secuencial.recomendable_si)}</p></div><div class="fa-cmp"><b>Acelerado</b>${lista('', d.comparacion.acelerado.argumentos)}<p class="help">Recomendable si: ${esc(d.comparacion.acelerado.recomendable_si)}</p></div></div><p>${esc(d.comparacion.valoracion)}</p>
+  <h4 class="fa-h4">Interpretación</h4><p>${esc(d.interpretacion)}</p>
+  <h4 class="fa-h4">Preguntas para afinar el diagnóstico</h4><ul class="fa-ul">${d.preguntas.map(q => `<li>${esc(q.pregunta)}<br><small class="muted">${esc(q.por_que)}</small></li>`).join('') || '<li>Ninguna.</li>'}</ul>${lista('Información adicional que convendría analizar', d.informacion_adicional)}
+  <p class="fa-adv">Diagnóstico exploratorio y de apoyo al análisis, no una predicción ni una validación empírica de los determinantes de la internacionalización. Depende de la información introducida y no sustituye un análisis académico o empresarial riguroso.</p>
+  <p class="help">Generado el ${esc(d.fecha || '')} con ${esc(d.modelo || '')}.</p>`;
+}
+function pintaDiag() {
+  const d = S.diag;
+  $('diagRes').innerHTML = !d ? '<p class="empty">Aún no hay diagnóstico. Describe la empresa en el paso anterior y pulsa «Diagnosticar».</p>' : (desactualizado() ? '<div class="aviso">Has cambiado los datos de la empresa o las dimensiones desde este diagnóstico: está <b>desactualizado</b>. Vuelve a diagnosticar para que refleje los datos actuales.</div>' : '') + htmlDiag(d);
+  $('diagDown').style.display = d ? '' : 'none';
+}
+function diagMd(d) {
+  const L = a => a.map(x => `- ${x}`).join('\n'), fac = f => `- **${f.factor}** (peso ${f.peso}${f.fundada ? '' : ', ⚠ sin dato comprobable'})\n- Dato: «${f.evidencia}»\n- Razonamiento: ${f.razonamiento}\n- Perspectiva: ${f.perspectiva}`;
+  return `## ${d.titulo}\n**Escenario más plausible:** ${d.escenario} · **Confianza:** ${d.confianza} · **Índice orientativo:** ${fmtN(d.indice)}\n${d.resumen}\n\n## Comprobaciones del código\n${d.avisos.length ? L(d.avisos) : '- Sin incoherencias detectadas.'}\n- Factores con dato verificado: ${d.fundadas} de ${d.nFactores}.\n\n## Factores que favorecen la aceleración\n${d.favorables.map(fac).join('\n')}\n\n## Factores limitantes\n${d.limitantes.map(fac).join('\n')}\n\n## Efecto de cada dimensión (−2 a +2)\n${d.contrib.map(c => `- ${c.nombre}: ${c.valor ? signo(c.efecto) + ' (valor ' + c.valor + '/5) — ' + c.motivo : 'sin información'}`).join('\n')}\n\n## Patrones entre dimensiones\n${L(d.patrones.map(p => `${p.titulo}: ${p.explicacion}`))}\n\n## Secuencial frente a acelerado\n- Secuencial: ${d.comparacion.secuencial.argumentos.join(' ')} Recomendable si: ${d.comparacion.secuencial.recomendable_si}\n- Acelerado: ${d.comparacion.acelerado.argumentos.join(' ')} Recomendable si: ${d.comparacion.acelerado.recomendable_si}\n${d.comparacion.valoracion}\n\n## Interpretación\n${d.interpretacion}\n\n## Preguntas para afinar el diagnóstico\n${L(d.preguntas.map(q => `${q.pregunta} (${q.por_que})`))}\n\n## Información adicional\n${L(d.informacion_adicional)}`;
+}
+const PIE = 'Diagnóstico exploratorio generado con IA y comprobado por código (' + APP_NAME + ' v' + APP_VERSION + '). No es una predicción ni una validación empírica, y no sustituye un análisis académico o empresarial riguroso.';
+$('btnWord').onclick = async () => { if (!S.diag) return toast('Aún no hay diagnóstico'); try { dl('diagnostico_internacionalizacion.docx', await wordDeMarkdown(diagMd(S.diag) + (S.sim.res ? '\n\n' + simMd(S.sim.res) : '') + (S.fiab.estab || S.fiab.sinInfo ? '\n\n' + fiabMd() : ''), {titulo: (S.empresa.nombre && !S.anonimo ? S.empresa.nombre + ' · ' : '') + 'Diagnóstico de internacionalización', subtitulo: hoy(), kicker: APP_NAME, pie: PIE})); } catch (e) { toast(e.message, 7000); } };
+$('btnCsv').onclick = () => { if (!S.diag) return toast('Aún no hay diagnóstico'); dl('efectos_por_dimension.csv', csvDe(['id', 'dimension', 'bloque', 'valor_1_5', 'efecto_-2_a_2', 'motivo', 'nota_del_codigo'], S.diag.contrib.map(c => [c.id, c.nombre, c.bloque, c.valor || 'sin información', c.efecto, c.motivo, c.flag])), 'text/csv;charset=utf-8'); };
+$('btnJson').onclick = () => dl('internacionalia_proyecto.json', JSON.stringify(exportaProyecto(), null, 1), 'application/json');
+
+/* ═════ simulación ═════ */
+const PRESETS = [['exp_directivos', 5, 'Más experiencia internacional del equipo directivo'], ['redes', 5, 'Fuertes redes internacionales'], ['cap_digitales', 5, 'Mayores capacidades digitales'], ['financieros', 4, 'Más recursos financieros']];
+function pintaSim() {
+  const d = S.diag, ok = d && !desactualizado();
+  $('simAviso').innerHTML = !d ? '<p class="empty">Primero hace falta un diagnóstico base (paso anterior).</p>' : desactualizado() ? '<div class="aviso">El diagnóstico base está desactualizado respecto a tus datos. Vuelve a diagnosticar antes de simular.</div>' : '';
+  $('simForm').style.display = ok ? '' : 'none';
+  if (!ok) { $('simRes').innerHTML = ''; return; }
+  $('simPresets').innerHTML = PRESETS.filter(p => S.dims.some(x => x.id === p[0])).map(p => `<button class="btn btn-ghost btn-sm" type="button" data-pre="${p[0]}|${p[1]}">${esc(p[2])}</button>`).join('');
+  $('simDim').innerHTML = S.dims.map(x => `<option value="${esc(x.id)}">${esc(x.nombre)} (ahora: ${S.valores[x.id] || '?'})</option>`).join('');
+  pintaCambios(); $('simRes').innerHTML = S.sim.res ? htmlSim(S.sim.res) : '';
+}
+function pintaCambios() {
+  const c = S.sim.cambios, ks = Object.keys(c);
+  $('simLista').innerHTML = ks.length ? ks.map(k => `<li>${esc(nombreDe(S.dims, k))}: de <b>${S.valores[k] || '?'}</b> a <b>${c[k] || '?'}</b> <button class="btn btn-ghost btn-sm" type="button" data-quita="${esc(k)}" aria-label="Quitar cambio">${ico('x')}</button></li>`).join('') : '<li class="muted">Aún no has propuesto ningún cambio.</li>';
+}
+$('simPresets').addEventListener('click', e => { const b = e.target.closest('[data-pre]'); if (!b) return; const [id, v] = b.dataset.pre.split('|'); S.sim.cambios[id] = +v; S.sim.res = null; pintaCambios(); $('simRes').innerHTML = ''; guarda(); });
+$('btnSimAdd').onclick = () => { S.sim.cambios[$('simDim').value] = +$('simVal').value; S.sim.res = null; pintaCambios(); $('simRes').innerHTML = ''; guarda(); };
+$('simLista').addEventListener('click', e => { const b = e.target.closest('[data-quita]'); if (!b) return; delete S.sim.cambios[b.dataset.quita]; S.sim.res = null; pintaCambios(); $('simRes').innerHTML = ''; guarda(); });
+$('btnSim').onclick = () => corre('simEstado', 'La IA está comparando los escenarios…', async () => {
+  const c = {...S.sim.cambios}; for (const k of Object.keys(c)) if ((Number(S.valores[k]) || 0) === c[k]) delete c[k];
+  if (!Object.keys(c).length) throw new Error('Propón al menos un cambio que sea distinto del valor actual.');
+  const perfil = perfilActual(), raw = await iaJSON('simulación', promptSim(S.diag, perfil, c, S.dims, S.valores), {max: 6000});
+  S.sim.res = procesaSim(raw, S.diag, c, {dims: S.dims, valores: S.valores, perfil}); await guardaYa(); $('simRes').innerHTML = htmlSim(S.sim.res);
+});
+function htmlSim(r) {
+  const flecha = r.dirCodigo === 'mejora' ? '▲' : r.dirCodigo === 'empeora' ? '▼' : '=';
+  return `<h3 class="fa-titulo">Base ${chipPot(S.diag.potencial)} → simulado ${chipPot(r.potencial)} <span class="fa-chip">${flecha} ${esc(r.dirCodigo)} (suma de cambios ${signo(r.sumaDelta)})</span></h3><p>${esc(r.resumen)}</p>
+  ${r.avisos.length ? `<div class="aviso"><b>Comprobaciones del código</b><ul class="fa-ul">${r.avisos.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : '<div class="okbox">El código no encontró incoherencias en esta simulación.</div>'}
+  <h4 class="fa-h4">Efectos de cada cambio</h4><ul class="fa-ul">${r.efectos.map(e => `<li><b>${esc(e.cambio)}:</b> ${esc(e.efecto)} — <i>${esc(e.mecanismo)}</i> <small class="muted">(${esc(e.perspectiva)})</small></li>`).join('')}</ul>
+  <p><b>Interacciones:</b> ${esc(r.interacciones)}</p>${r.persisten.length ? `<p><b>Limitantes que persisten:</b> ${r.persisten.map(esc).join('; ')}.</p>` : ''}
+  <h4 class="fa-h4">Base frente a simulado</h4>${barras(S.diag.contrib, r.contrib)}<p class="fa-adv">${esc(r.advertencia || 'Escenario hipotético: depende de que los cambios sean reales.')} Es un diagnóstico exploratorio, no una predicción.</p>`;
+}
+const simMd = r => `## Simulación: ¿qué ocurriría si…?\n${Object.entries(r.cambios).map(([k, v]) => `- ${nombreDe(S.dims, k)}: de ${S.valores[k] || 'sin información'} a ${v || 'sin información'}`).join('\n')}\n**Base:** ${S.diag.potencial} → **Simulado:** ${r.potencial} (${r.dirCodigo})\n${r.resumen}\n${r.efectos.map(e => `- ${e.cambio}: ${e.efecto} — ${e.mecanismo}`).join('\n')}\nInteracciones: ${r.interacciones}\n${r.avisos.length ? 'Comprobaciones del código:\n' + r.avisos.map(a => '- ' + a).join('\n') : ''}`;
+
+/* ═════ fiabilidad ═════ */
+function htmlFund() {
+  const d = S.diag; if (!d) return '<p class="empty">Hace falta un diagnóstico.</p>';
+  const fs = [...d.favorables.map(f => ['Favorable', f]), ...d.limitantes.map(f => ['Limitante', f])], pct = fs.length ? Math.round(d.fundadas / fs.length * 100) : 0;
+  return `<p><span class="fa-chip ${pct === 100 ? 'ok' : 'aviso'}">${d.fundadas} de ${d.nFactores} factores citan un dato tuyo verificable (${pct} %)</span></p><div class="table-wrap"><table><thead><tr><th>Tipo</th><th>Factor</th><th>Dimensión</th><th>Valor introducido</th><th>Evidencia citada por la IA</th><th>Dato</th></tr></thead><tbody>${fs.map(([t, f]) => `<tr><td>${t}</td><td>${esc(f.factor)}</td><td>${esc(f.dimension_id === 'otro' ? 'otra' : nombreDe(S.dims, f.dimension_id))}</td><td>${f.dimension_id !== 'otro' ? (S.valores[f.dimension_id] || '?') : '—'}</td><td>«${esc(f.evidencia)}»</td><td>${f.fundada ? '✓' : '⚠'}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function htmlEstab(e) {
+  return `<p><span class="fa-chip ${e.veredicto === 'Estable' ? 'ok' : 'aviso'}">${esc(e.veredicto)}</span> Potencial en cada ejecución: ${e.pots.map(chipPot).join(' ')} · Desviación media de los efectos: <b>${e.sdMedia.toFixed(2).replace('.', ',')}</b> · Escenario ${e.mismoEsc ? 'igual' : 'distinto'} en todas</p>
+  <div class="table-wrap"><table><thead><tr><th>Dimensión</th>${e.pots.map((_, i) => `<th>Ejec. ${i + 1}</th>`).join('')}<th>Desv.</th></tr></thead><tbody>${e.filas.slice(0, 8).map(f => `<tr><td>${esc(f.nombre)}</td>${f.efectos.map(x => `<td>${signo(x)}</td>`).join('')}<td>${f.sd.toFixed(2).replace('.', ',')}</td></tr>`).join('')}</tbody></table></div><p class="help">Se muestran las 8 dimensiones con más variación. Si el potencial o los efectos cambian mucho entre ejecuciones, interpreta el resultado con más cautela.</p>`;
+}
+function htmlSinInfo(s) {
+  const ok1 = s.efectoCero, ok2 = s.pregunto;
+  return `<ul class="fa-ul"><li>Dimensión ocultada: <b>${esc(s.dim)}</b></li><li>${ok1 ? '✓' : '⚠'} Efecto que la IA le asignó (antes de la corrección del código): <b>${s.efectoCrudo === null ? 'ninguno' : signo(s.efectoCrudo)}</b> (esperado: 0)</li><li>${ok2 ? '✓' : '⚠'} ¿Preguntó por ella?: <b>${ok2 ? 'sí' : 'no, el código añadió la pregunta'}</b></li><li>${s.usadoComoFactor ? '⚠' : '✓'} ¿La usó como factor favorable o limitante?: <b>${s.usadoComoFactor ? 'sí' : 'no'}</b></li><li>Potencial con la información completa: ${chipPot(S.diag.potencial)} · sin ella: ${chipPot(s.potencial)} · confianza: ${esc(S.diag.confianza)} → ${esc(s.confianza)}</li></ul>`;
+}
+function pintaFiab() {
+  const d = S.diag, ok = d && !desactualizado();
+  const avF = !d ? '<p class="empty">Primero hace falta un diagnóstico (paso 2).</p>' : desactualizado() ? '<div class="aviso">El diagnóstico está desactualizado respecto a tus datos: las pruebas no serían comparables. Vuelve a diagnosticar.</div>' : '';
+  $('fiabAviso').innerHTML = avF; $('fiabAviso').parentElement.style.display = avF ? '' : 'none';
+  $('fiabCtl').style.display = ok ? '' : 'none';
+  $('siDim').innerHTML = S.dims.filter(x => S.valores[x.id]).map(x => `<option value="${esc(x.id)}">${esc(x.nombre)} (${S.valores[x.id]}/5)</option>`).join('');
+  $('estRes').innerHTML = S.fiab.estab ? htmlEstab(S.fiab.estab) : ''; $('siRes').innerHTML = S.fiab.sinInfo ? htmlSinInfo(S.fiab.sinInfo) : ''; $('funRes').innerHTML = htmlFund();
+}
+$('btnEstab').onclick = () => corre('estEstado', 'Repitiendo el diagnóstico…', async () => {
+  const n = +$('estN').value, runs = [S.diag];
+  for (let i = 0; i < n; i++) { $('estEstado').innerHTML = `<span class="spin"></span> Repetición ${i + 1} de ${n}…`; runs.push(await diagnosticaCon(S.empresa, S.dims, S.valores, S.notas, S.anonimo, 'estabilidad')); }
+  S.fiab.estab = resumenEstabilidad(runs, S.dims); await guardaYa(); $('estRes').innerHTML = htmlEstab(S.fiab.estab);
+});
+$('btnSinInfo').onclick = () => corre('siEstado', 'Diagnosticando sin esa dimensión…', async () => {
+  const id = $('siDim').value; if (!id) throw new Error('No hay ninguna dimensión valorada que ocultar.');
+  if (nValoradas() < 5) throw new Error('Con tan pocas dimensiones valoradas la prueba no es informativa (mínimo 5).');
+  const v2 = {...S.valores}; delete v2[id]; const n2 = {...S.notas}; delete n2[id];
+  const d2 = await diagnosticaCon(S.empresa, S.dims, v2, n2, S.anonimo, 'prueba sin información');
+  S.fiab.sinInfo = resultadoSinInfo(d2, id, S.dims); await guardaYa(); $('siRes').innerHTML = htmlSinInfo(S.fiab.sinInfo);
+});
+function fiabMd() {
+  const e = S.fiab.estab, s = S.fiab.sinInfo, d = S.diag;
+  return `## Evaluación crítica de la IA\n- Fundamentación: ${d.fundadas} de ${d.nFactores} factores citan un dato verificable.\n` + (e ? `- Estabilidad (${e.pots.length} ejecuciones): ${e.veredicto}. Potencial: ${e.pots.join(', ')}. Desviación media de efectos: ${e.sdMedia.toFixed(2)}.\n` : '') + (s ? `- Información ausente («${s.dim}»): efecto asignado ${s.efectoCrudo === null ? 'ninguno' : s.efectoCrudo} (esperado 0); ${s.pregunto ? 'preguntó por ella' : 'no preguntó por ella'}; ${s.usadoComoFactor ? 'la usó como factor' : 'no la usó como factor'}.\n` : '');
+}
+
+/* ═════ casos docentes ═════ */
+const avisosNarr = c => { const a = [], p = S.casoParams, w = wc(c.narrativa.join(' ')), nom = c.dims.filter(d => norm(c.narrativa.join(' ')).includes(norm(d.nombre))).map(d => d.nombre); if (!c.meta.ficticio && Math.abs(w - (c.meta.palabras || p.palabras)) > (c.meta.palabras || p.palabras) * 0.4) a.push(`La narrativa tiene ${w} palabras (pedidas: unas ${c.meta.palabras || p.palabras}).`); if (nom.length) a.push(`La narrativa nombra literalmente dimensiones (${nom.join('; ')}): quita esas expresiones para no dar pistas.`); return a; };
+function pintaCasos() {
+  const p = S.casoParams; $('cSector').value = p.sector; $('cNivel').value = p.nivel; $('cAsig').value = p.asignatura; $('cTipo').value = p.tipo; $('cPal').value = p.palabras; $('cNotas').value = p.notas;
+  $('casoRes').innerHTML = S.caso ? htmlCaso(S.caso, true) : '<p class="empty">Aún no hay caso. Genera uno con IA o carga el de ejemplo.</p>'; $('casoDown').style.display = S.caso ? '' : 'none';
+  if (S.caso) $('cNarr').value = S.caso.narrativa.join('\n\n');
+}
+['cSector', 'cNivel', 'cAsig', 'cTipo', 'cPal', 'cNotas'].forEach(id => $(id).addEventListener('input', () => { S.casoParams = {sector: $('cSector').value, nivel: $('cNivel').value, asignatura: $('cAsig').value, tipo: $('cTipo').value, palabras: Math.max(150, Math.min(900, +$('cPal').value || 350)), notas: $('cNotas').value}; guarda(); }));
+function htmlCaso(c, docente) {
+  const av = [...c.avisos.filter(a => !/^La narrativa/.test(a)), ...avisosNarr(c)];
+  return `<h3 class="fa-titulo">${esc(c.titulo)}</h3>${c.meta.ficticio ? '<p class="help">Caso de ejemplo, ficticio y precalculado (sin IA).</p>' : ''}
+  ${docente && av.length ? `<div class="aviso"><b>Comprobaciones del código</b><ul class="fa-ul">${av.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : ''}
+  ${docente ? '<div class="field"><label for="cNarr">Narrativa (puedes editarla; separa los párrafos con una línea en blanco)</label><textarea id="cNarr" rows="12"></textarea></div>' : c.narrativa.map(p => `<p>${esc(p)}</p>`).join('')}
+  <h4 class="fa-h4">Preguntas</h4><ol class="fa-ul fa-ol">${c.preguntas.map(q => `<li>${esc(q)}</li>`).join('')}</ol>
+  ${docente ? `<details class="fa-det"><summary>Guía para el profesorado (no compartir con el alumnado)</summary>${htmlGuia(c)}</details>` : ''}`;
+}
+function htmlGuia(c) {
+  const g = c.guia, r = c.referencia, L = a => `<ul class="fa-ul">${a.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
+  return `<p><b>Tipo de proceso:</b> ${esc(g.tipo_de_proceso)}</p><p><b>Aceleradores</b></p>${L(g.factores_aceleradores)}<p><b>Limitantes</b></p>${L(g.factores_limitantes)}<p><b>Respuestas orientativas</b></p><ol class="fa-ul fa-ol">${g.respuestas_orientativas.map(x => `<li>${esc(x)}</li>`).join('')}</ol>
+  <p><b>Referencia (estimación de la IA):</b> potencial ${chipPot(r.potencial)} · escenario ${esc(r.escenario)}</p><div class="table-wrap"><table><thead><tr><th>Dimensión</th><th>Nivel en el caso</th><th>Efecto</th><th>Motivo</th></tr></thead><tbody>${c.dims.map(d => `<tr><td>${esc(d.nombre)}</td><td>${r.valores[d.id] || '?'}</td><td>${signo(r.efectos[d.id] || 0)}</td><td>${esc(r.motivos[d.id] || '')}</td></tr>`).join('')}</tbody></table></div>`;
+}
+document.addEventListener('input', e => { if (e.target.id === 'cNarr' && S.caso) { S.caso.narrativa = e.target.value.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean); guarda(); } });
+async function generaCaso(p) {
+  const raw = await iaJSON('caso docente', promptCaso(p, S.dims), {system: SISTEMA_DOC, max: 7000});
+  return procesaCaso(raw, p, S.dims);
+}
+$('btnCaso').onclick = () => corre('casoEstado', 'Escribiendo el caso y su guía…', async () => {
+  const p = {...S.casoParams}; if (!norm(p.sector)) throw new Error('Indica el sector.'); S.caso = await generaCaso(p); await guardaYa(); pintaCasos();
+});
+$('btnCasoEj').onclick = () => { S.caso = JSON.parse(JSON.stringify(EJ_CASO)); guarda(); pintaCasos(); toast('Caso de ejemplo cargado (sin IA)'); };
+const casoWordMd = c => `## ${c.titulo}\n${c.narrativa.join('\n\n')}\n\n## Preguntas\n${c.preguntas.map((q, i) => `${i + 1}. ${q}`).join('\n')}`;
+const guiaWordMd = c => { const g = c.guia, r = c.referencia, L = a => a.map(x => '- ' + x).join('\n'); return `## Guía del profesorado: ${c.titulo}\n**Tipo de proceso:** ${g.tipo_de_proceso}\n\n## Factores aceleradores\n${L(g.factores_aceleradores)}\n\n## Factores limitantes\n${L(g.factores_limitantes)}\n\n## Respuestas orientativas\n${g.respuestas_orientativas.map((x, i) => `${i + 1}. ${x}`).join('\n')}\n\n## Referencia de la IA (potencial ${r.potencial}, escenario ${r.escenario})\n${c.dims.map(d => `- ${d.nombre}: nivel ${r.valores[d.id] || '?'}, efecto ${signo(r.efectos[d.id] || 0)} — ${r.motivos[d.id] || ''}`).join('\n')}`; };
+const PIE_CASO = 'Caso ficticio generado con IA y revisado por el profesorado (' + APP_NAME + '). Las empresas y personas no existen.';
+$('btnCasoWordAlu').onclick = async () => { try { dl('caso_alumnado.docx', await wordDeMarkdown(casoWordMd(S.caso), {titulo: S.caso.titulo, subtitulo: 'Caso para el alumnado', kicker: APP_NAME, pie: PIE_CASO})); } catch (e) { toast(e.message, 7000); } };
+$('btnCasoWordGuia').onclick = async () => { try { dl('guia_profesorado.docx', await wordDeMarkdown(guiaWordMd(S.caso), {titulo: S.caso.titulo, subtitulo: 'Guía del profesorado — no compartir', kicker: APP_NAME, pie: PIE_CASO})); } catch (e) { toast(e.message, 7000); } };
+$('btnCasoJsonAlu').onclick = () => dl('caso_alumnado.json', JSON.stringify({formato: 'internacionalia-caso/1', caso: casoAlumnado(S.caso)}, null, 1), 'application/json');
+$('btnCasoJsonFull').onclick = () => dl('caso_completo.json', JSON.stringify({formato: 'internacionalia-caso/1', caso: S.caso}, null, 1), 'application/json');
+$('btnCasoPractica').onclick = () => { aluUsa(JSON.parse(JSON.stringify(S.caso))); go(6); };
+
+/* ═════ alumnado ═════ */
+const aluNuevo = caso => ({caso, analisis: {efectos: {}, potencial: '', escenario: '', justif: '', resp: []}, cerrado: false, refKey: caso.referencia ? 'guia' : 'ia', refIA: null});
+function aluUsa(caso) { S.alu = aluNuevo(caso); guarda(); }
+function pintaAlu() {
+  const a = S.alu; $('aluCaso').style.display = a ? '' : 'none'; $('aluAnalisis').style.display = a ? '' : 'none'; $('aluComp').style.display = a && a.cerrado ? '' : 'none';
+  $('aluSector').value = $('aluSector').value || 'Servicios digitales'; if (!a) return;
+  const c = a.caso; $('aluCasoTxt').innerHTML = `<h3 class="fa-titulo">${esc(c.titulo)}</h3>${c.narrativa.map(p => `<p>${esc(p)}</p>`).join('')}<h4 class="fa-h4">Preguntas</h4><ol class="fa-ol fa-ul">${c.preguntas.map((q, i) => `<li>${esc(q)}<textarea rows="2" data-resp="${i}" aria-label="Respuesta ${i + 1}" ${a.cerrado ? 'disabled' : ''}>${esc(a.analisis.resp[i] || '')}</textarea></li>`).join('')}</ol>`;
+  $('aluDims').innerHTML = c.dims.map(d => { const v = a.analisis.efectos[d.id]; return `<div class="fa-dim" data-id="${esc(d.id)}"><div class="fa-dn"><b>${esc(d.nombre)}</b></div><div class="fa-esc" role="group" aria-label="${esc(d.nombre)}">${[-2, -1, 0, 1, 2].map(n => `<button type="button" data-ef="${n}" aria-pressed="${v === n}" ${a.cerrado ? 'disabled' : ''}>${signo(n)}</button>`).join('')}</div></div>`; }).join('');
+  $('aluPot').innerHTML = '<option value="">—</option>' + POT.map(p => `<option${a.analisis.potencial === p ? ' selected' : ''}>${p}</option>`).join(''); $('aluEsc').innerHTML = '<option value="">—</option>' + ESC.map(p => `<option${a.analisis.escenario === p ? ' selected' : ''}>${p}</option>`).join('');
+  $('aluJustif').value = a.analisis.justif; [$('aluPot'), $('aluEsc'), $('aluJustif')].forEach(x => x.disabled = a.cerrado);
+  $('btnAluCierra').style.display = a.cerrado ? 'none' : ''; $('btnAluReabre').style.display = a.cerrado ? '' : 'none';
+  $('aluMarcadas').textContent = `${Object.keys(a.analisis.efectos).length} de ${c.dims.length} dimensiones valoradas`;
+  if (a.cerrado) pintaComp();
+}
+$('btnAluEj').onclick = () => { aluUsa(JSON.parse(JSON.stringify(EJ_CASO))); pintaAlu(); toast('Caso de ejemplo cargado (sin IA)'); };
+$('btnAluFile').onclick = () => $('fileCaso').click();
+$('fileCaso').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try { const j = JSON.parse(await f.text()), c = j.caso; if (j.formato !== 'internacionalia-caso/1' || !c || !Array.isArray(c.narrativa) || !Array.isArray(c.dims) || !c.dims.length || !Array.isArray(c.preguntas)) throw new Error(); c.meta = c.meta || {}; aluUsa(c); pintaAlu(); toast('Caso cargado'); }
+  catch { toast('Ese fichero no es un caso de InternacionalIA (.json).', 6000); }
+};
+$('btnAluGen').onclick = () => corre('aluGenEstado', 'Escribiendo un caso nuevo…', async () => {
+  const sector = $('aluSector').value.trim(); if (!norm(sector)) throw new Error('Indica un sector.');
+  const caso = await generaCaso({sector, tipo: $('aluTipo').value, nivel: 'alumnado de Grado en Empresa', asignatura: '', palabras: 320, notas: ''}); aluUsa(caso); pintaAlu();
+});
+$('aluDims').addEventListener('click', e => {
+  const b = e.target.closest('button[data-ef]'); if (!b || !S.alu || S.alu.cerrado) return; const id = b.closest('.fa-dim').dataset.id, v = +b.dataset.ef, ef = S.alu.analisis.efectos;
+  if (ef[id] === v) delete ef[id]; else ef[id] = v; b.closest('.fa-esc').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(ef[id] === +x.dataset.ef))); $('aluMarcadas').textContent = `${Object.keys(ef).length} de ${S.alu.caso.dims.length} dimensiones valoradas`; guarda();
+});
+document.addEventListener('input', e => { if (!S.alu) return; if (e.target.dataset && e.target.dataset.resp !== undefined) S.alu.analisis.resp[+e.target.dataset.resp] = e.target.value; else if (e.target.id === 'aluJustif') S.alu.analisis.justif = e.target.value; else return; guarda(); });
+document.addEventListener('change', e => { if (!S.alu) return; if (e.target.id === 'aluPot') S.alu.analisis.potencial = e.target.value; else if (e.target.id === 'aluEsc') S.alu.analisis.escenario = e.target.value; else return; guarda(); });
+$('btnAluCierra').onclick = () => { const a = S.alu; if (Object.keys(a.analisis.efectos).length < 3) return toast('Valora al menos 3 dimensiones antes de comparar.'); if (!a.analisis.potencial) return toast('Elige tu potencial de aceleración.'); a.cerrado = true; guarda(); pintaAlu(); };
+$('btnAluReabre').onclick = () => { S.alu.cerrado = false; guarda(); pintaAlu(); };
+const refActual = () => { const a = S.alu; if (a.refKey === 'guia' && a.caso.referencia) return {...a.caso.referencia, nombre: 'Guía del caso (escrita por la IA al generarlo)'}; if (a.refIA) return {...a.refIA.ref, nombre: 'Diagnóstico independiente de la IA sobre el texto del caso'}; return null; };
+function pintaComp() {
+  const a = S.alu, tieneGuia = !!a.caso.referencia; $('aluRefSel').innerHTML = `${tieneGuia ? `<option value="guia"${a.refKey === 'guia' ? ' selected' : ''}>Guía del caso</option>` : ''}<option value="ia"${a.refKey === 'ia' ? ' selected' : ''}>Diagnóstico independiente de la IA</option>`;
+  $('btnAluRefIA').textContent = a.refIA ? 'Repetir el diagnóstico de la IA' : 'Pedir a la IA su propio diagnóstico'; $('btnAluRefIA').parentElement.style.display = a.refKey === 'ia' ? '' : 'none';
+  const ref = refActual(); if (!ref) { $('aluCompRes').innerHTML = '<p class="empty">Elige una referencia. Con «Diagnóstico independiente» la IA lee el texto del caso, propone un valor por dimensión (con cita comprobada por el código) y diagnostica; son 2 llamadas.</p>'; return; }
+  const cmp = comparaAnalisis(a.analisis, ref, a.caso.dims), est = {coincide: '✓ coincide', cercano: '≈ cercano', distinto: '✕ distinto', 'sin marcar': '— sin marcar'};
+  $('aluCompRes').innerHTML = `<p class="help">Referencia: <b>${esc(ref.nombre)}</b>. Es una estimación cualitativa, no una respuesta correcta única: úsala para discutir las diferencias.</p>
+  ${a.refKey === 'ia' && a.refIA && a.refIA.avisos.length ? `<div class="aviso"><b>Comprobaciones del código sobre el diagnóstico de la IA</b><ul class="fa-ul">${a.refIA.avisos.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+  <p><span class="fa-chip">Coinciden: <b>${cmp.coinciden}</b></span> <span class="fa-chip">Cercanas (±1): <b>${cmp.cercanos}</b></span> <span class="fa-chip">Distintas: <b>${cmp.distintos}</b></span> <span class="fa-chip">Diferencia media: <b>${cmp.mae === null ? '—' : cmp.mae.toFixed(2).replace('.', ',')}</b></span></p>
+  <p>Tu potencial: ${a.analisis.potencial ? chipPot(a.analisis.potencial) : '—'} · referencia: ${chipPot(ref.potencial)} · ${cmp.potencialDif === 0 ? 'coincide' : cmp.potencialDif === null ? '' : 'diferencia de ' + Math.abs(cmp.potencialDif) + ' nivel(es)'}${cmp.escenarioIgual === null ? '' : ' · escenario: ' + (cmp.escenarioIgual ? 'coincide' : 'tú «' + esc(a.analisis.escenario) + '», referencia «' + esc(ref.escenario) + '»')}</p>
+  ${cmp.noVistos.length ? `<p><b>Factores relevantes en la referencia que no valoraste o dejaste en 0:</b> ${cmp.noVistos.map(esc).join('; ')}.</p>` : '<p>No dejaste sin valorar ningún factor relevante de la referencia.</p>'}
+  <div class="table-wrap"><table><thead><tr><th>Dimensión</th><th>Tú</th><th>Referencia</th><th>Estado</th><th>Motivo de la referencia</th></tr></thead><tbody>${cmp.filas.map(f => `<tr><td>${esc(f.nombre)}</td><td>${f.alu === null ? '—' : signo(f.alu)}</td><td>${signo(f.ref)}</td><td>${est[f.estado]}</td><td>${esc(f.motivo)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+$('aluRefSel').onchange = e => { S.alu.refKey = e.target.value; guarda(); pintaComp(); };
+$('btnAluRefIA').onclick = () => corre('aluRefEstado', 'La IA está leyendo y diagnosticando el caso…', async () => {
+  const a = S.alu, c = a.caso, txt = c.narrativa.join('\n\n'), dims = c.dims;
+  const rawE = await iaJSON('leer caso', promptExtrae(txt, dims), {max: 4500, llamadas: 2}), ex = procesaExtrae(rawE, txt, dims), valores = {}, notas = {};
+  ex.filas.forEach(f => { if (f.valor && f.ok) { valores[f.id] = f.valor; notas[f.id] = f.cita; } });
+  if (Object.keys(valores).length < 3) throw new Error('La IA no logró fundamentar (con cita verificada) al menos 3 dimensiones en el texto del caso.');
+  const d = await diagnosticaCon({...EMPRESA_VACIA, nombre: '', situacion: txt}, dims, valores, notas, false, 'diagnóstico del caso');
+  a.refIA = {ref: refDeDiag(d), avisos: [...(ex.nSinVerificar ? [`${ex.nSinVerificar} valoración(es) de la IA sobre el texto no tenían cita verificable y se dejaron sin información.`] : []), ...d.avisos], modelo: getMod(), fecha: hoy()}; a.refKey = 'ia'; await guardaYa(); pintaComp();
+});
+function aluMd() {
+  const a = S.alu, an = a.analisis, ref = refActual(), cmp = ref ? comparaAnalisis(an, ref, a.caso.dims) : null;
+  return `## Mi análisis: ${a.caso.titulo}\n**Potencial de aceleración:** ${an.potencial || '—'} · **Escenario:** ${an.escenario || '—'}\n${an.justif ? '\n' + an.justif + '\n' : ''}\n## Efecto de cada dimensión (−2 a +2)\n${a.caso.dims.map(d => `- ${d.nombre}: ${an.efectos[d.id] === undefined ? 'sin valorar' : signo(an.efectos[d.id])}`).join('\n')}\n\n## Respuestas a las preguntas\n${a.caso.preguntas.map((q, i) => `${i + 1}. ${q}\n   ${an.resp[i] || '(sin respuesta)'}`).join('\n')}` + (cmp ? `\n\n## Comparación con: ${ref.nombre}\n- Coinciden ${cmp.coinciden}, cercanas ${cmp.cercanos}, distintas ${cmp.distintos}; diferencia media ${cmp.mae === null ? '—' : cmp.mae.toFixed(2)}.\n- Potencial de la referencia: ${ref.potencial}; escenario: ${ref.escenario}.\n${cmp.filas.map(f => `- ${f.nombre}: tú ${f.alu === null ? '—' : signo(f.alu)}, referencia ${signo(f.ref)} (${f.estado})${f.motivo ? ' — ' + f.motivo : ''}`).join('\n')}` : '');
+}
+$('btnAluWord').onclick = async () => { if (!S.alu) return; try { dl('mi_analisis.docx', await wordDeMarkdown(aluMd(), {titulo: 'Mi análisis del caso', subtitulo: hoy(), kicker: APP_NAME, pie: 'Análisis del alumnado comparado con una referencia de IA. Herramienta de aprendizaje: no es una calificación.'})); } catch (e) { toast(e.message, 7000); } };
+$('btnAluJson').onclick = () => { if (!S.alu) return; const a = S.alu; dl('mi_analisis.json', JSON.stringify({formato: 'internacionalia-analisis/1', app: APP_NAME, version: APP_VERSION, caso: {id: a.caso.id, titulo: a.caso.titulo}, analisis: a.analisis, cerrado: a.cerrado, referencia: a.cerrado && refActual() ? refActual().nombre : null, fecha: new Date().toISOString()}, null, 1), 'application/json'); };
+
+/* ── arranque ── */
+(async () => { const p = await cargaEstado(); if (p) { S = {...nuevoEstado(), ...p}; S.casoParams = {...nuevoEstado().casoParams, ...(p.casoParams || {})}; S.sim = S.sim || {cambios: {}, res: null}; S.fiab = S.fiab || {estab: null, sinInfo: null}; S.extrae = S.extrae || {texto: '', res: null}; } iniciaUI(); go(0); })();
+
+</script>
+</body></html>
