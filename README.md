@@ -4,6 +4,8 @@ Diagnóstico exploratorio de la internacionalización acelerada frente a la secu
 
 **Usar la app:** https://fborrasumh.github.io/internacionalia/ *(disponible cuando se publique)*
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23158465.svg)](https://doi.org/10.5281/zenodo.23158465)
+
 ## Qué hace
 
 - **Describe una empresa** con datos generales y **15 dimensiones** agrupadas en cinco bloques (recursos y trayectoria, equipo directivo, conocimiento y redes, capacidades, producto y mercado), valoradas de 1 a 5 o «?» si no se sabe. Las dimensiones se pueden **añadir, quitar o renombrar**, definiendo qué significan el 1 y el 5.
@@ -53,7 +55,7 @@ ORCID: Fernando Borrás Rocher [0000-0002-5519-4573](https://orcid.org/0000-0002
 
 ## Cómo citar
 
-Borrás Rocher, F. y Vaquero Sánchez, M. A. (2026). *InternacionalIA* (v1.0.0) [Software]. Universidad Miguel Hernández de Elche. (DOI en trámite)
+Borrás Rocher, F. y Vaquero Sánchez, M. A. (2026). *InternacionalIA* (v1.0.0) [Software]. Universidad Miguel Hernández de Elche. DOI: [10.5281/zenodo.23158465](https://doi.org/10.5281/zenodo.23158465)
 
 ## Licencia
 
